@@ -35,3 +35,31 @@
 [W 16:59:04.090 NotebookApp] 404 GET /nbextensions/nbextensions_configurator/tree_tab/main.js?v=20200911214024 (111.187.76.56) 3.48ms referer=http://10.11.41.116:8890/tree?
 [W 16:59:11.253 NotebookApp] 404 GET /nbextensions/nbextensions_configurator/config_menu/main.js?v=20200911214024 (111.187.76.56) 4.65ms referer=http://10.11.41.116:8890/notebooks/demos/scMVP_regress_tutorial.ipynb
 [W 16:59:11.291 NotebookApp] 404 GET /nbextensions/widgets/notebook/js/extension.js?v=20200911214024 (111.187.76.56) 3.14ms referer=http://10.11.41.116:8890/notebooks/demos/scMVP_regress_tutorial.ipynb
+[W 17:01:28.448 NotebookApp] 404 GET /nbextensions/nbextensions_configurator/config_menu/main.js?v=20200911214024 (111.187.76.56) 3.31ms referer=http://10.11.41.116:8890/notebooks/demos/scMVP_dataloader.ipynb
+[I 17:01:28.728 NotebookApp] Kernel started: 61cf1054-97bc-406b-9169-fce267842cac, name: python3
+[W 17:01:28.849 NotebookApp] 404 GET /nbextensions/widgets/notebook/js/extension.js?v=20200911214024 (111.187.76.56) 3.57ms referer=http://10.11.41.116:8890/notebooks/demos/scMVP_dataloader.ipynb
+[W 17:30:59.378 NotebookApp] WebSocket ping timeout after 119991 ms.
+[I 17:31:04.382 NotebookApp] Starting buffering for 61cf1054-97bc-406b-9169-fce267842cac:11af89445bb144758977ccba715c807e
+[W 17:31:13.450 NotebookApp] WebSocket ping timeout after 119990 ms.
+[I 17:31:18.453 NotebookApp] Starting buffering for 9039c50c-699e-4e39-9615-6fc1bbfc07d9:feb60fed019c441a8143c99cf872b6f6
+[I 22:31:07.820 NotebookApp] 302 GET / (111.187.80.83) 1.44ms
+[W 22:31:08.527 NotebookApp] 404 GET /nbextensions/nbextensions_configurator/tree_tab/main.js?v=20200911214024 (111.187.80.83) 3.50ms referer=http://10.11.41.116:8890/tree?
+[W 22:31:12.530 NotebookApp] 404 GET /nbextensions/nbextensions_configurator/config_menu/main.js?v=20200911214024 (111.187.80.83) 5.89ms referer=http://10.11.41.116:8890/notebooks/demos/scMVP_tutorial.ipynb
+[W 22:31:12.596 NotebookApp] 404 GET /nbextensions/widgets/notebook/js/extension.js?v=20200911214024 (111.187.80.83) 3.75ms referer=http://10.11.41.116:8890/notebooks/demos/scMVP_tutorial.ipynb
+[I 22:31:13.763 NotebookApp] Kernel started: 03c96eb4-7920-4b3e-9f73-75e3cf309034, name: python3
+[I 22:31:29.434 NotebookApp] Starting buffering for 03c96eb4-7920-4b3e-9f73-75e3cf309034:2b865321839b4c578346503d8ccf6667
+[I 22:31:29.753 NotebookApp] Kernel restarted: 03c96eb4-7920-4b3e-9f73-75e3cf309034
+[I 22:31:29.790 NotebookApp] Restoring connection for 03c96eb4-7920-4b3e-9f73-75e3cf309034:2b865321839b4c578346503d8ccf6667
+[I 22:31:29.791 NotebookApp] Replaying 3 buffered messages
+[I 22:33:34.342 NotebookApp] Starting buffering for 03c96eb4-7920-4b3e-9f73-75e3cf309034:2b865321839b4c578346503d8ccf6667
+[I 22:33:34.667 NotebookApp] Kernel restarted: 03c96eb4-7920-4b3e-9f73-75e3cf309034
+[I 22:33:34.712 NotebookApp] Restoring connection for 03c96eb4-7920-4b3e-9f73-75e3cf309034:2b865321839b4c578346503d8ccf6667
+[I 22:33:34.712 NotebookApp] Replaying 3 buffered messages
+[I 22:35:13.909 NotebookApp] Saving file at /demos/scMVP_tutorial.ipynb
+[I 22:36:10.463 NotebookApp] Saving file at /demos/scMVP_tutorial.ipynb
+[W 22:36:31.589 NotebookApp] 404 GET /nbextensions/nbextensions_configurator/config_menu/main.js?v=20200911214024 (111.187.80.83) 2.01ms referer=http://10.11.41.116:8890/notebooks/demos/scMVP_regress_tutorial.ipynb
+[W 22:36:31.671 NotebookApp] 404 GET /nbextensions/widgets/notebook/js/extension.js?v=20200911214024 (111.187.80.83) 1.94ms referer=http://10.11.41.116:8890/notebooks/demos/scMVP_regress_tutorial.ipynb
+[I 22:36:57.346 NotebookApp] Saving file at /demos/scMVP_regress_tutorial.ipynb
+[I 22:36:59.949 NotebookApp] Starting buffering for 9039c50c-699e-4e39-9615-6fc1bbfc07d9:91a04d43c33549e7860310efefea480a
+[I 22:37:14.008 NotebookApp] Saving file at /demos/scMVP_tutorial.ipynb
+[I 22:37:25.224 NotebookApp] Saving file at /demos/scMVP_tutorial.ipynb
