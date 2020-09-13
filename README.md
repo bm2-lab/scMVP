@@ -1,4 +1,4 @@
-# scMVP - single cell multi-view processor
+# scMVP - single cell multi-view profiler
 
 scMVP is a python toolkit for joint profiling of scRNA and scATAC data profiling and analysis
 with multi-modal VAE model.
