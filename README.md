@@ -56,5 +56,5 @@ Your should first prepare your input files, example is as follows:
 
 
 ### Reference
-scMVP: an integrative generative model for joint profiling of single cell RNA-seq and ATAC-seq data. 2020
+A deep generative model for multi-view profiling of single-cell RNA-seq and ATAC-seq data.(submited) 2020
 
