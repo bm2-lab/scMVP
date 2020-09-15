@@ -40,7 +40,7 @@ class LoadData(GeneExpressionDataset):
         delayed_populating: bool = False,
         file_separator: str = "\t",
         gzipped: bool = False,
-        atac_threshold: float = 0.0001, # express in over 0.1%
+        atac_threshold: float = 0.0001, # express in over 0.01%
         cell_threshold: int = 1 # filtering cells less than minimum count
                  ):
 
@@ -162,9 +162,9 @@ class LoadData(GeneExpressionDataset):
                 if _key not in self._minimum_input:
                     logger.debug("Unknown input data type:{}".format(_key))
                     return False
-                if not self.dataset[_key].split(".")[-1] in ["txt","tsv","csv"]:
-                    logger.debug("scMVP only support two files input of txt, tsv or csv!")
-                    return False
+                # if not self.dataset[_key].split(".")[-1] in ["txt","tsv","csv"]:
+                #     logger.debug("scMVP only support two files input of txt, tsv or csv!")
+                #     return False
         elif len(self.dataset.keys()) >= 6:
             for _key in self._allow_input:
                 if not _key in self.dataset.keys():
@@ -178,6 +178,59 @@ class LoadData(GeneExpressionDataset):
                 logger.debug("Cannot find {}{}!".format(self.data_path, self.dataset[_key]))
                 return False
         return True
+
+
+class SnareDemo(LoadData):
+
+    def __init__(self, dataset_name: str=None, data_path: str="/dataset"):
+        available_datasets = {
+            "CellLineMixture": {
+                "gene_expression": "GSE126074_CellLineMixture_SNAREseq_cDNA.counts.tsv.gz",
+                "atac_expression": "GSE126074_CellLineMixture_SNAREseq_chromatin.counts.tsv.gz",
+            },
+            "AdBrainCortex": {
+                "gene_barcodes": "GSE126074_AdBrainCortex_SNAREseq_cDNA.barcodes.tsv.gz",
+                "gene_expression": "GSE126074_AdBrainCortex_SNAREseq_cDNA.counts.mtx.gz",
+                "gene_names": "GSE126074_AdBrainCortex_SNAREseq_cDNA.genes.tsv.gz",
+                "atac_barcodes": "GSE126074_AdBrainCortex_SNAREseq_chromatin.barcodes.tsv.gz",
+                "atac_expression": "GSE126074_AdBrainCortex_SNAREseq_chromatin.counts.mtx.gz",
+                "atac_names": "GSE126074_AdBrainCortex_SNAREseq_chromatin.peaks.tsv.gz",
+            },
+            "P0_BrainCortex": {
+                "gene_barcodes": "GSE126074_P0_BrainCortex_SNAREseq_cDNA.barcodes.tsv.gz",
+                "gene_expression": "GSE126074_P0_BrainCortex_SNAREseq_cDNA.counts.mtx.gz",
+                "gene_names": "GSE126074_P0_BrainCortex_SNAREseq_cDNA.genes.tsv.gz",
+                "atac_barcodes": "GSE126074_P0_BrainCortex_SNAREseq_chromatin.barcodes.tsv.gz",
+                "atac_expression": "GSE126074_P0_BrainCortex_SNAREseq_chromatin.counts.mtx.gz",
+                "atac_names": "GSE126074_P0_BrainCortex_SNAREseq_chromatin.peaks.tsv.gz",
+        }
+        }
+        if dataset_name=="CellLineMixture":
+
+            super().__init__(dataset = available_datasets[dataset_name],
+                         data_path= data_path,
+                         dense = False,
+                         measurement_names_column = 0,
+                         remove_extracted_data = False,
+                         delayed_populating = False,
+                         file_separator = "\t",
+                         gzipped = True,
+                         atac_threshold = 0.0005,
+                         cell_threshold = 1
+                         )
+        elif dataset_name=="AdBrainCortex" or dataset_name=="P0_BrainCortex":
+            super().__init__(dataset=available_datasets[dataset_name],
+                             data_path=data_path,
+                             dense=True,
+                             measurement_names_column=0,
+                             remove_extracted_data=False,
+                             delayed_populating=False,
+                             gzipped=True,
+                             atac_threshold=0.0005,
+                             cell_threshold=1
+                             )
+        else:
+            logging.info('Please select from "CellLineMixture", "AdBrainCortex" or "P0_BrainCortex" dataset.')
 
 
 # obselete demo
