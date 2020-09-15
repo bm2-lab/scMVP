@@ -47,27 +47,8 @@ available_suffix = {
 }
 available_specification = ["filtered", "raw"]
 
+
 class snareDataset(GeneExpressionDataset):
-    """Loads a file from `10x`_ website.
-
-    :param dataset_name: Name of the dataset file. Has to be one of:
-        "CellLineMixture", "AdBrainCortex", "P0_BrainCortex".
-    :param save_path: Location to use when saving/loading the data.
-    :param url: manual override of the download remote location.
-        Note that we already provide urls for most 10X datasets,
-        which are automatically formed only using the ``dataset_name``.
-    :param type: Either `filtered` data or `raw` data.
-    :param dense: Whether to load as dense or sparse.
-        If False, data is cast to sparse using ``scipy.sparse.csr_matrix``.
-    :param measurement_names_column: column in which to find measurement names in the corresponding `.tsv` file.
-    :param remove_extracted_data: Whether to remove extracted archives after populating the dataset.
-    :param delayed_populating: Whether to populate dataset with a delay
-
-    Examples:
-        >>> snare_dataset = snare("P0_BrainCortex")
-
-    """
-
 
     def __init__(
         self,

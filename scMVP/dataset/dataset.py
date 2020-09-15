@@ -119,7 +119,7 @@ class GeneExpressionDataset(Dataset):
         """Populates the data attributes of a GeneExpressionDataset object from a (nb_cells, nb_genes) matrix.
 
         :param X: RNA counts matrix, sparse format supported (e.g ``scipy.sparse.csr_matrix``).
-        :param Ys: List of paired count measurements (e.g CITE-seq protein measurements, spatial coordinates)
+        :param Ys: List of paired count measurements (s ATAC-seq)
         :param batch_indices: ``np.ndarray`` with shape (nb_cells,). Maps each cell to the batch
             it originates from. Note that a batch most likely refers to a specific piece
             of tissue or a specific experimental protocol.
@@ -984,12 +984,8 @@ class GeneExpressionDataset(Dataset):
         )
         self.update_cells(subset_cells)
 
-    def filter_cells_by_count(self, datatype:str = None, min_count: int = 1):
-        if datatype == "atac_seq":
-            mask_cells_to_keep = np.squeeze(np.asarray(self.X.sum(axis=1) >= min_count))
-        else:
-            # squeezing necessary in case of sparse matrix
-            mask_cells_to_keep = np.squeeze(np.asarray(self.X.sum(axis=1) >= min_count))
+    def filter_cells_by_count(self, min_count: int = 1):
+        mask_cells_to_keep = np.squeeze(np.asarray(self.X.sum(axis=1) >= min_count))
         self.update_cells(mask_cells_to_keep)
 
     def filter_cell_types(self, cell_types: Union[List[str], List[int], np.ndarray]):
@@ -1282,7 +1278,7 @@ def compute_library_size(
     masked_log_sum = np.ma.log(sum_counts)
     if np.ma.is_masked(masked_log_sum):
         logger.warning(
-            "This dataset has some empty cells, this might fail scVI inference."
+            "This dataset has some empty cells, this might fail scMVP inference."
             "Data should be filtered with `my_dataset.filter_cells_by_count()"
         )
     log_counts = masked_log_sum.filled(0)
