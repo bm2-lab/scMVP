@@ -321,11 +321,11 @@ class PariedDemo(LoadData):
         elif dataset_name=="Adult_Cerebral" or dataset_name=="Fetal_Forebrain":
             super().__init__(dataset=available_datasets[dataset_name],
                              data_path=data_path,
-                             dense=True,
+                             dense=False,
                              measurement_names_column=0,
                              remove_extracted_data=False,
                              delayed_populating=False,
-                             gzipped=True,
+                             gzipped=False,
                              atac_threshold=0.0005,
                              cell_threshold=1
                              )
