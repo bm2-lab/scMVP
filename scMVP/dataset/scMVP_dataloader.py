@@ -207,8 +207,8 @@ class SnareDemo(LoadData):
         url="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE126074"
         available_datasets = {
             "CellLineMixture": {
-                "gene_expression": "GSE126074_CellLineMixture_SNAREseq_cDNA.counts.tsv.gz",
-                "atac_expression": "GSE126074_CellLineMixture_SNAREseq_chromatin.counts.tsv.gz",
+                "gene_expression": "GSE126074_CellLineMixture_SNAREseq_cDNA_counts.tsv.gz",
+                "atac_expression": "GSE126074_CellLineMixture_SNAREseq_chromatin_counts.tsv.gz",
             },
             "AdBrainCortex": {
                 "gene_barcodes": "GSE126074_AdBrainCortex_SNAREseq_cDNA.barcodes.tsv.gz",
