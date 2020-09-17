@@ -96,13 +96,10 @@ class LoadData(GeneExpressionDataset):
         elif len(self.dataset.keys()) == 6:
             for _key in self.dataset.keys():
                 if self.gzip:
-                    print("we are gzip")
                     if self.dataset[_key].endswith("mtx.gz"):
                         if self.dense:
-                            print("it is dense")
                             joint_profiles[_key] = sp_io.mmread("{}/{}".format(self.data_path,self.dataset[_key])).T
                         else:
-                            print("it is not dense")
                             joint_profiles[_key] = csr_matrix(sp_io.mmread("{}/{}".format(self.data_path,self.dataset[_key])).T)
                     else:
                         joint_profiles[_key] = pd.read_csv("{}/{}".format(self.data_path,self.dataset[_key]), sep=self.file_separator,
@@ -126,10 +123,8 @@ class LoadData(GeneExpressionDataset):
         joint_profiles["gene_barcodes"] = tmp.loc[gene_barcode_index,:]
         gene_tab = joint_profiles["gene_expression"]
         if issparse(gene_tab):
-            print("genetab sparse")
             joint_profiles["gene_expression"] = gene_tab[gene_barcode_index, :].A
         else:
-            print("genetab not sparse")
             joint_profiles["gene_expression"] = gene_tab[gene_barcode_index, :]
 
 
