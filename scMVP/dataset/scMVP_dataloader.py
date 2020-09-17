@@ -359,7 +359,7 @@ class SciCarDemo(LoadData):
 
             super().__init__(dataset=available_datasets[dataset_name],
                              data_path=data_path,
-                             dense=True,
+                             dense=False,
                              measurement_names_column=0,
                              remove_extracted_data=False,
                              delayed_populating=False,
