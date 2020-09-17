@@ -251,7 +251,7 @@ class SnareDemo(LoadData):
                              cell_threshold=1
                              )
         else:
-            logging.info('Please select from "CellLineMixture", "AdBrainCortex" or "P0_BrainCortex" dataset.')
+            logging.debug('Please select from "CellLineMixture", "AdBrainCortex" or "P0_BrainCortex" dataset.')
 
 
 class PariedDemo(LoadData):
