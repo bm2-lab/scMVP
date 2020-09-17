@@ -142,6 +142,7 @@ class LoadData(GeneExpressionDataset):
             reorder_atac_exp["atac_expression"] = _tmp.A
         else:
             _tmp = reorder_atac_exp[:, high_count_atacs]
+
             reorder_atac_exp["atac_expression"] = _tmp
             reorder_atac_exp["atac_names"] = reorder_atac_exp["atac_names"].loc[high_count_atacs, :]
 
