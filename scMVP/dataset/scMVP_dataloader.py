@@ -344,7 +344,7 @@ class SciCarDemo(LoadData):
                 "gene_expression": "GSM3271040_RNA_sciCAR_A549_gene_count.txt",
                 "atac_barcodes": "GSM3271041_ATAC_sciCAR_A549_cell.tsv",
                 "atac_names": "GSM3271041_ATAC_sciCAR_A549_peak.tsv",
-                "atac_expression": "GSM3271041_ATAC_sciCAR_A549_peak.count.txt"
+                "atac_expression": "GSM3271041_ATAC_sciCAR_A549_peak_count.txt"
             },
             "mouse_kidney": {
                 "gene_barcodes": "GSM3271044_RNA_mouse_kidney_cell.tsv",
