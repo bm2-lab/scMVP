@@ -353,7 +353,7 @@ class SciCarDemo(LoadData):
                 # generate gene and atac barcodes from cell metadata.
                 with open("{}/{}".format(data_path, available_datasets[dataset_name][barcode_file]),"w") as fo:
                     infile = "{}/{}.txt".format(data_path, available_datasets[dataset_name][barcode_file][:-4])
-                    indata = [i.rstrip().split(",") for i in infile][1:]
+                    indata = [i.rstrip().split(",") for i in open(infile)][1:]
                     for line in indata:
                         fo.write("{}\n".format(line[0]))
 
