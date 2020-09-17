@@ -102,7 +102,7 @@ class LoadData(GeneExpressionDataset):
                         else:
                             joint_profiles[_key] = csr_matrix(sp_io.mmread("{}/{}".format(self.data_path,self.dataset[_key])).T)
                     else:
-                        pd.read_csv("{}/{}".format(self.data_path,self.dataset[_key]), sep=self.file_separator,
+                        joint_profiles[_key] = pd.read_csv("{}/{}".format(self.data_path,self.dataset[_key]), sep=self.file_separator,
                                     compression="gzip", header=None)
                 else:
                     if _key.endswith("mtx"):
@@ -111,8 +111,9 @@ class LoadData(GeneExpressionDataset):
                         else:
                             joint_profiles[_key] = csr_matrix(sp_io.mmread("{}/{}".format(self.data_path,self.dataset[_key])).T)
                     else:
-                        pd.read_csv("{}/{}".format(self.data_path,self.dataset[_key]), sep=self.file_separator, header=None)
-
+                        joint_profiles[_key] = pd.read_csv("{}/{}".format(self.data_path,self.dataset[_key]), sep=self.file_separator, header=None)
+        else:
+            logger.info("more than 6 inputs.")
         share_index, gene_barcode_index, atac_barcode_index = np.intersect1d(joint_profiles["gene_barcodes"].values,
                                                                     joint_profiles["atac_barcodes"].values,
                                                                     return_indices=True)
