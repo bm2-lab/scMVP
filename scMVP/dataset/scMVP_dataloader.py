@@ -69,7 +69,7 @@ class LoadData(GeneExpressionDataset):
         logger.info("Preprocessing joint profiling dataset.")
         if not self._input_check():
             print("hello")
-            logger.debug("Please reload your dataset.")
+            logger.info("Please reload your dataset.")
             return
         else:
             print("Hello2")
@@ -164,7 +164,7 @@ class LoadData(GeneExpressionDataset):
         if len(self.dataset.keys()) == 2:
             for _key in self.dataset.keys():
                 if _key not in self._minimum_input:
-                    logger.debug("Unknown input data type:{}".format(_key))
+                    logger.info("Unknown input data type:{}".format(_key))
                     return False
                 # if not self.dataset[_key].split(".")[-1] in ["txt","tsv","csv"]:
                 #     logger.debug("scMVP only support two files input of txt, tsv or csv!")
@@ -172,7 +172,7 @@ class LoadData(GeneExpressionDataset):
         elif len(self.dataset.keys()) >= 6:
             for _key in self._allow_input:
                 if not _key in self.dataset.keys():
-                    logger.debug("Data type {} missing.".format(_key))
+                    logger.info("Data type {} missing.".format(_key))
                     return False
         else:
             logger.debug("Incorrect input file number.")
