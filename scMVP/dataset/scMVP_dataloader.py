@@ -96,7 +96,7 @@ class LoadData(GeneExpressionDataset):
         elif len(self.dataset.keys()) == 6:
             for _key in self.dataset.keys():
                 if _key == "atac_expression" or _key == "gene_expression" and not self.dense:
-                        joint_profiles[_key] = csr_matrix(sp_io.mmread("{}/{}".format(self.data_path,self.dataset[_key])).T)
+                    joint_profiles[_key] = csr_matrix(sp_io.mmread("{}/{}".format(self.data_path,self.dataset[_key])).T)
 
                 elif self.gzip:
                     joint_profiles[_key] = pd.read_csv("{}/{}".format(self.data_path, self.dataset[_key]),
