@@ -68,11 +68,8 @@ class LoadData(GeneExpressionDataset):
     def populate(self):
         logger.info("Preprocessing joint profiling dataset.")
         if not self._input_check():
-            print("hello")
             logger.info("Please reload your dataset.")
             return
-        else:
-            print("Hello2")
         joint_profiles = {}
         if len(self.dataset.keys()) == 2:
             for _key in self.dataset.keys():
@@ -175,13 +172,13 @@ class LoadData(GeneExpressionDataset):
                     logger.info("Data type {} missing.".format(_key))
                     return False
         else:
-            logger.debug("Incorrect input file number.")
+            logger.info("Incorrect input file number.")
             return False
         for _key in self.dataset.keys():
             if not os.path.exists(self.data_path):
-                logger.debug("{} do not exist!".format(self.data_path))
+                logger.info("{} do not exist!".format(self.data_path))
             if not os.path.exists("{}{}".format(self.data_path, self.dataset[_key])):
-                logger.debug("Cannot find {}{}!".format(self.data_path, self.dataset[_key]))
+                logger.info("Cannot find {}{}!".format(self.data_path, self.dataset[_key]))
                 return False
         return True
 
@@ -425,7 +422,7 @@ class scMVP_dataloader(GeneExpressionDataset):
             for filename in filenames:
                 self.save_path_list.append(os.path.join(save_path, filename))
         else:
-            logger.debug("Loading extracted user dataset with custom filename")
+            logger.info("Loading extracted user dataset with custom filename")
         super().__init__()
         if not delayed_populating:
             self.populate()
