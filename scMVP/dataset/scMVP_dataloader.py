@@ -96,8 +96,10 @@ class LoadData(GeneExpressionDataset):
         elif len(self.dataset.keys()) == 6:
             for _key in self.dataset.keys():
                 if self.gzip:
-                    if _key.endswith("mtx.gz"):
+                    print("we are gzip")
+                    if self.dataset[_key].endswith("mtx.gz"):
                         if self.dense:
+                            print("it is dense")
                             joint_profiles[_key] = sp_io.mmread("{}/{}".format(self.data_path,self.dataset[_key])).T
                         else:
                             print("it is not dense")
@@ -106,7 +108,7 @@ class LoadData(GeneExpressionDataset):
                         joint_profiles[_key] = pd.read_csv("{}/{}".format(self.data_path,self.dataset[_key]), sep=self.file_separator,
                                     compression="gzip", header=None)
                 else:
-                    if _key.endswith("mtx"):
+                    if self.dataset[_key].endswith("mtx"):
                         if self.dense:
                             joint_profiles[_key] = sp_io.mmread("{}/{}".format(self.data_path,self.dataset[_key])).T
                         else:
@@ -124,11 +126,12 @@ class LoadData(GeneExpressionDataset):
         joint_profiles["gene_barcodes"] = tmp.loc[gene_barcode_index,:]
         gene_tab = joint_profiles["gene_expression"]
         if issparse(gene_tab):
-            joint_profiles["gene_expression"] = gene_tab[gene_barcode_index, :].A
             print("genetab sparse")
+            joint_profiles["gene_expression"] = gene_tab[gene_barcode_index, :].A
         else:
-            joint_profiles["gene_expression"] = gene_tab[gene_barcode_index, :]
             print("genetab not sparse")
+            joint_profiles["gene_expression"] = gene_tab[gene_barcode_index, :]
+
 
         temp = joint_profiles["atac_barcodes"]
         joint_profiles["atac_barcodes"] = temp.loc[atac_barcode_index, :]
