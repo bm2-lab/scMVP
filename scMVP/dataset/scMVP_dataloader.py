@@ -123,9 +123,9 @@ class LoadData(GeneExpressionDataset):
         joint_profiles["gene_barcodes"] = tmp.loc[gene_barcode_index,:]
         gene_tab = joint_profiles["gene_expression"]
         if issparse(gene_tab):
-            joint_profiles["gene_expression"] = gene_tab[gene_barcode_index,:].A
+            joint_profiles["gene_expression"] = gene_tab.iloc[gene_barcode_index,:].A
         else:
-            joint_profiles["gene_expression"] = gene_tab[gene_barcode_index, :]
+            joint_profiles["gene_expression"] = gene_tab.iloc[gene_barcode_index, :]
 
         temp = joint_profiles["atac_barcodes"]
         joint_profiles["atac_barcodes"] = temp.loc[atac_barcode_index, :]
@@ -139,12 +139,12 @@ class LoadData(GeneExpressionDataset):
 
         if issparse(reorder_atac_exp):
             high_count_atacs_index = np.where(high_count_atacs)
-            _tmp = reorder_atac_exp[:, high_count_atacs_index[1]]
+            _tmp = reorder_atac_exp.iloc[:, high_count_atacs_index[1]]
             joint_profiles["atac_expression"] = _tmp.A
             joint_profiles["atac_names"] = joint_profiles["atac_names"].loc[high_count_atacs_index[1], :]
 
         else:
-            _tmp = reorder_atac_exp[:, high_count_atacs]
+            _tmp = reorder_atac_exp.iloc[:, high_count_atacs]
 
             joint_profiles["atac_expression"] = _tmp
             joint_profiles["atac_names"] = joint_profiles["atac_names"].loc[high_count_atacs, :]
