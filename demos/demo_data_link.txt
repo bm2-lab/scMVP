@@ -1,0 +1,12 @@
+# DEMO data GEO link
+
+## sci-CAR
+https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE117089&format=file
+
+## Paired-seq
+https://ftp.ncbi.nlm.nih.gov/geo/series/GSE130nnn/GSE130399/suppl/GSE130399_GSM3737488_GSM3737489_Cell_Mix.tar.gz
+https://ftp.ncbi.nlm.nih.gov/geo/series/GSE130nnn/GSE130399/suppl/GSE130399_GSM3737490-GSM3737495_Adult_Cerebrail_Cortex.tar.gz
+https://ftp.ncbi.nlm.nih.gov/geo/series/GSE130nnn/GSE130399/suppl/GSE130399_GSM3737496-GSM3737499_Fetal_Forebrain.tar.gz
+
+## SNARE-seq
+https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE126074

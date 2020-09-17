@@ -6,10 +6,14 @@ data/
 *.csv
 *.tsv
 *.mtx
+*.xls
 demos/dataset/*.txt
+demos/dataset/*/*.txt
+*.bed
 analysis_script
 requirement.txt
 docs/
+*.gz
 nohup.out
 
 # Byte-compiled / optimized / DLL files

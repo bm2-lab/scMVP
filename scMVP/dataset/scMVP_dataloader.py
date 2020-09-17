@@ -1,6 +1,7 @@
 import logging
 import os
 import tarfile
+import urllib
 import numpy as np
 import pandas as pd
 import scipy.io as sp_io
@@ -174,15 +175,36 @@ class LoadData(GeneExpressionDataset):
             logger.debug("Incorrect input file number.")
             return False
         for _key in self.dataset.keys():
+            if not os.path.exists(self.data_path):
+                logger.debug("{} do not exist!".format(self.data_path))
             if not os.path.exists("{}{}".format(self.data_path, self.dataset[_key])):
                 logger.debug("Cannot find {}{}!".format(self.data_path, self.dataset[_key]))
                 return False
         return True
 
+    def _download(url: str, save_path: str, filename: str):
+        """Writes data from url to file."""
+        if os.path.exists(os.path.join(save_path, filename)):
+            logger.info("File %s already downloaded" % (os.path.join(save_path, filename)))
+            return
+
+        r = urllib.request.urlopen(url)
+        logger.info("Downloading file at %s" % os.path.join(save_path, filename))
+
+        def read_iter(file, block_size=1000):
+            """Given a file 'file', returns an iterator that returns bytes of
+            size 'blocksize' from the file, using read()."""
+            while True:
+                block = file.read(block_size)
+                if not block:
+                    break
+                yield block
+
 
 class SnareDemo(LoadData):
 
     def __init__(self, dataset_name: str=None, data_path: str="/dataset"):
+        url="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE126074"
         available_datasets = {
             "CellLineMixture": {
                 "gene_expression": "GSE126074_CellLineMixture_SNAREseq_cDNA.counts.tsv.gz",
@@ -203,10 +225,9 @@ class SnareDemo(LoadData):
                 "atac_barcodes": "GSE126074_P0_BrainCortex_SNAREseq_chromatin.barcodes.tsv.gz",
                 "atac_expression": "GSE126074_P0_BrainCortex_SNAREseq_chromatin.counts.mtx.gz",
                 "atac_names": "GSE126074_P0_BrainCortex_SNAREseq_chromatin.peaks.tsv.gz",
-        }
+            }
         }
         if dataset_name=="CellLineMixture":
-
             super().__init__(dataset = available_datasets[dataset_name],
                          data_path= data_path,
                          dense = False,
@@ -231,6 +252,112 @@ class SnareDemo(LoadData):
                              )
         else:
             logging.info('Please select from "CellLineMixture", "AdBrainCortex" or "P0_BrainCortex" dataset.')
+
+
+class PariedDemo(LoadData):
+
+    def __init__(self, dataset_name: str = None, data_path: str = "/dataset"):
+        urls = [
+                "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE130nnn/GSE130399/suppl/GSE130399_GSM3737488_GSM3737489_Cell_Mix.tar.gz",
+                "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE130nnn/GSE130399/suppl/GSE130399_GSM3737490-GSM3737495_Adult_Cerebrail_Cortex.tar.gz",
+                "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE130nnn/GSE130399/suppl/GSE130399_GSM3737496-GSM3737499_Fetal_Forebrain.tar.gz"
+                ]
+
+        available_datasets = {
+            "CellLineMixture": {
+                "gene_barcodes": "Cell_Mix_RNA/genes.tsv",
+                "gene_expression": "Cell_Mix_RNA/matrix.mtx",
+                "gene_names": "Cell_Mix_RNA/barcodes.tsv",
+                "atac_barcodes": "Cell_Mix_DNA/genes.tsv",
+                "atac_expression": "Cell_Mix_DNA/matrix.mtx",
+                "atac_names": "Cell_Mix_DNA/barcodes.tsv"
+            },
+            "Adult_Cerebral": {
+                "gene_barcodes": "Adult_CTX_RNA/genes.tsv",
+                "gene_expression": "Adult_CTX_RNA/matrix.mtx",
+                "gene_names": "Adult_CTX_RNA/barcodes.tsv",
+                "atac_barcodes": "Adult_CTX_DNA/genes.tsv",
+                "atac_expression": "Adult_CTX_DNA/matrix.mtx",
+                "atac_names": "Adult_CTX_DNA/barcodes.tsv"
+            },
+            "Fetal_Forebrain": {
+                "gene_barcodes": "FB_RNA/genes.tsv",
+                "gene_expression": "FB_RNA/matrix.mtx",
+                "gene_names": "FB_RNA/barcodes.tsv",
+                "atac_barcodes": "FB_DNA/genes.tsv",
+                "atac_expression": "FB_DNA/matrix.mtx",
+                "atac_names": "FB_DNA/barcodes.tsv"
+            }
+        }
+        if dataset_name=="CellLineMixture":
+            super().__init__(dataset = available_datasets[dataset_name],
+                         data_path= data_path,
+                         dense = False,
+                         measurement_names_column = 0,
+                         remove_extracted_data = False,
+                         delayed_populating = False,
+                         gzipped = False,
+                         atac_threshold = 0.0005,
+                         cell_threshold = 1
+                         )
+        elif dataset_name=="Adult_Cerebral" or dataset_name=="Fetal_Forebrain":
+            super().__init__(dataset=available_datasets[dataset_name],
+                             data_path=data_path,
+                             dense=True,
+                             measurement_names_column=0,
+                             remove_extracted_data=False,
+                             delayed_populating=False,
+                             gzipped=True,
+                             atac_threshold=0.0005,
+                             cell_threshold=1
+                             )
+        else:
+            logging.info('Please select from {} dataset.'.format("\t".join(available_datasets.keys())))
+
+
+class SciCarDemo(LoadData):
+    def __init__(self, dataset_name: str = None, data_path: str = "/dataset"):
+        urls = "https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE117089&format=file"
+        # NOTICE, tsv files are generated from original txt files
+        available_datasets = {
+            "CellLineMixture": {
+                "gene_barcodes": "GSM3271040_RNA_sciCAR_A549_cell.tsv",
+                "gene_names": "GSM3271040_RNA_sciCAR_A549_gene.tsv",
+                "gene_expression": "GSM3271040_RNA_sciCAR_A549_gene.count.mtx",
+                "atac_barcodes": "GSM3271041_ATAC_sciCAR_A549_cell.tsv",
+                "atac_names": "GSM3271041_ATAC_sciCAR_A549_peak.tsv",
+                "atac_expression": "GSM3271041_ATAC_sciCAR_A549_peak.count.mtx"
+            },
+            "mouse_kidney": {
+                "gene_barcodes": "GSM3271044_RNA_mouse_kidney_cell.tsv",
+                "gene_names": "GSM3271044_RNA_mouse_kidney_gene.tsv",
+                "gene_expression": "GSM3271044_RNA_mouse_kidney_gene.count.mtx",
+                "atac_barcodes": "GSM3271045_ATAC_mouse_kidney_cell.tsv",
+                "atac_names": "GSM3271045_ATAC_mouse_kidney_peak.tsv",
+                "atac_expression": "GSM3271045_ATAC_mouse_kidney_peak_count.mtx"
+            }
+        }
+        if dataset_name:
+            for barcode_file in ["gene_barcodes", "atac_barcodes", "gene_names", "atac_names"]:
+                # generate gene and atac barcodes from cell metadata.
+                with open("{}/{}".format(data_path, available_datasets[dataset_name][barcode_file]),"w") as fo:
+                    infile = "{}/{}.txt".format(data_path, available_datasets[dataset_name][barcode_file][:-4])
+                    indata = [i.rstrip().split(",") for i in infile][1:]
+                    for line in indata:
+                        fo.write("{}\n".format(line[0]))
+
+            super().__init__(dataset=available_datasets[dataset_name],
+                             data_path=data_path,
+                             dense=True,
+                             measurement_names_column=0,
+                             remove_extracted_data=False,
+                             delayed_populating=False,
+                             gzipped=False,
+                             atac_threshold=0.0005,
+                             cell_threshold=1
+                             )
+        else:
+            logging.info('Please select from {} dataset.'.format("\t".join(available_datasets.keys())))
 
 
 # obselete demo
