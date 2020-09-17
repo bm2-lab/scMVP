@@ -228,7 +228,7 @@ class SnareDemo(LoadData):
             }
         }
         if dataset_name=="CellLineMixture":
-            super().__init__(dataset = available_datasets[dataset_name],
+            super(SnareDemo, self).__init__(dataset = available_datasets[dataset_name],
                          data_path= data_path,
                          dense = False,
                          measurement_names_column = 0,
