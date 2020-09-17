@@ -341,18 +341,18 @@ class SciCarDemo(LoadData):
             "CellLineMixture": {
                 "gene_barcodes": "GSM3271040_RNA_sciCAR_A549_cell.tsv",
                 "gene_names": "GSM3271040_RNA_sciCAR_A549_gene.tsv",
-                "gene_expression": "GSM3271040_RNA_sciCAR_A549_gene.count.mtx",
+                "gene_expression": "GSM3271040_RNA_sciCAR_A549_gene.count.txt",
                 "atac_barcodes": "GSM3271041_ATAC_sciCAR_A549_cell.tsv",
                 "atac_names": "GSM3271041_ATAC_sciCAR_A549_peak.tsv",
-                "atac_expression": "GSM3271041_ATAC_sciCAR_A549_peak.count.mtx"
+                "atac_expression": "GSM3271041_ATAC_sciCAR_A549_peak.count.txt"
             },
             "mouse_kidney": {
                 "gene_barcodes": "GSM3271044_RNA_mouse_kidney_cell.tsv",
                 "gene_names": "GSM3271044_RNA_mouse_kidney_gene.tsv",
-                "gene_expression": "GSM3271044_RNA_mouse_kidney_gene.count.mtx",
+                "gene_expression": "GSM3271044_RNA_mouse_kidney_gene.count.txt",
                 "atac_barcodes": "GSM3271045_ATAC_mouse_kidney_cell.tsv",
                 "atac_names": "GSM3271045_ATAC_mouse_kidney_peak.tsv",
-                "atac_expression": "GSM3271045_ATAC_mouse_kidney_peak_count.mtx"
+                "atac_expression": "GSM3271045_ATAC_mouse_kidney_peak_count.txt"
             }
         }
         if dataset_name:
