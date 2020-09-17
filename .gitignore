@@ -10,6 +10,7 @@ demos/dataset/*.txt
 analysis_script
 requirement.txt
 docs/
+*.gz
 nohup.out
 
 # Byte-compiled / optimized / DLL files
