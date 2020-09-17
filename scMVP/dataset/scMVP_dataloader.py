@@ -257,7 +257,7 @@ class SnareDemo(LoadData):
                          cell_threshold = 1
                          )
         elif dataset_name=="AdBrainCortex" or dataset_name=="P0_BrainCortex":
-            super().__init__(dataset=available_datasets[dataset_name],
+            super(SnareDemo, self).__init__(dataset=available_datasets[dataset_name],
                              data_path=data_path,
                              dense=False,
                              measurement_names_column=0,
@@ -374,7 +374,7 @@ class SciCarDemo(LoadData):
                              cell_threshold=1
                              )
         else:
-            looger.info('Please select from {} dataset.'.format("\t".join(available_datasets.keys())))
+            logger.info('Please select from {} dataset.'.format("\t".join(available_datasets.keys())))
 
 
 # obselete demo
