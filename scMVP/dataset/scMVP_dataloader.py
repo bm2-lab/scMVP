@@ -62,6 +62,7 @@ class LoadData(GeneExpressionDataset):
                              "atac_barcodes", "atac_names"
                              )
         super().__init__()
+        print("hello")
         if not delayed_populating:
             print("not delay")
             self.populate()
