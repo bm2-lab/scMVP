@@ -72,13 +72,26 @@ class LoadData(GeneExpressionDataset):
             return
         joint_profiles = {}
         if len(self.dataset.keys()) == 2:
-            for _key in self.dataset.keys():
-                if self.gzip:
-                    joint_profiles[_key] = pd.read_csv("{}/{}".format(self.data_path,self.dataset[_key]), sep=self.file_separator,
-                        header=0, index_col=0)
-                else:
-                    joint_profiles[_key] = pd.read_csv("{}/{}".format(self.data_path,self.dataset[_key]), sep=self.file_separator,
-                                                       header=0, index_col=0, compression="gzip")
+            # for _key in self.dataset.keys():
+            if self.gzip:
+                _tmp = pd.read_csv("{}/{}".format(self.data_path,self.dataset["gene_expression"]), sep=self.file_separator,
+                    header=0, index_col=0)
+            else:
+                _tmp = pd.read_csv("{}/{}".format(self.data_path,self.dataset["gene_expression"]), sep=self.file_separator,
+                                                   header=0, index_col=0, compression="gzip")
+            joint_profiles["gene_barcodes"] = pd.DataFrame(_tmp.columns.values)
+            joint_profiles["gene_names"] = pd.DataFrame(_tmp._stat_axis.values)
+            joint_profiles["gene_expression"] = np.array(_tmp).T
+
+            if self.gzip:
+                _tmp = pd.read_csv("{}/{}".format(self.data_path,self.dataset["atac_expression"]), sep=self.file_separator,
+                    header=0, index_col=0)
+            else:
+                _tmp = pd.read_csv("{}/{}".format(self.data_path,self.dataset["atac_expression"]), sep=self.file_separator,
+                                                   header=0, index_col=0, compression="gzip")
+            joint_profiles["atac_barcodes"] = pd.DataFrame(_tmp.columns.values)
+            joint_profiles["atac_names"] = pd.DataFrame(_tmp._stat_axis.values)
+            joint_profiles["atac_expression"] = np.array(_tmp).T
 
         elif len(self.dataset.keys()) == 6:
             for _key in self.dataset.keys():
