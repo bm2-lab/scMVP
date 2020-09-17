@@ -6,7 +6,10 @@ data/
 *.csv
 *.tsv
 *.mtx
+*.xls
 demos/dataset/*.txt
+demos/dataset/*/*.txt
+*.bed
 analysis_script
 requirement.txt
 docs/
