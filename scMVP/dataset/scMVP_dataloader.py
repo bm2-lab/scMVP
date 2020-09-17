@@ -97,7 +97,6 @@ class LoadData(GeneExpressionDataset):
             for _key in self.dataset.keys():
                 if self.gzip:
                     if self.dense:
-
                         joint_profiles[_key] = pd.read_csv("{}/{}".format(self.data_path, self.dataset[_key]),
                                                            sep=self.file_separator,
                                                            compression="gzip", header=None)
@@ -107,10 +106,11 @@ class LoadData(GeneExpressionDataset):
 
                 else:
                     if self.dense:
-                        joint_profiles[_key] = sp_io.mmread("{}/{}".format(self.data_path,self.dataset[_key])).T
-                    else:
-                        # joint_profiles[_key] = csr_matrix(sp_io.mmread("{}/{}".format(self.data_path,self.dataset[_key])).T)
                         joint_profiles[_key] = pd.read_csv("{}/{}".format(self.data_path,self.dataset[_key]), sep=self.file_separator, header=None)
+
+                        # joint_profiles[_key] = sp_io.mmread("{}/{}".format(self.data_path,self.dataset[_key])).T
+                    else:
+                        joint_profiles[_key] = csr_matrix(sp_io.mmread("{}/{}".format(self.data_path,self.dataset[_key])).T)
         else:
             logger.info("more than 6 inputs.")
         share_index, gene_barcode_index, atac_barcode_index = np.intersect1d(joint_profiles["gene_barcodes"].values,
