@@ -139,12 +139,14 @@ class LoadData(GeneExpressionDataset):
         if issparse(reorder_atac_exp):
             high_count_atacs_index = np.where(high_count_atacs)
             _tmp = reorder_atac_exp[:, high_count_atacs_index[1]]
-            reorder_atac_exp["atac_expression"] = _tmp.A
+            joint_profiles["atac_expression"] = _tmp.A
+            joint_profiles["atac_names"] = joint_profiles["atac_names"].loc[high_count_atacs_index[1], :]
+
         else:
             _tmp = reorder_atac_exp[:, high_count_atacs]
 
-            reorder_atac_exp["atac_expression"] = _tmp
-            reorder_atac_exp["atac_names"] = reorder_atac_exp["atac_names"].loc[high_count_atacs, :]
+            joint_profiles["atac_expression"] = _tmp
+            joint_profiles["atac_names"] = joint_profiles["atac_names"].loc[high_count_atacs, :]
 
          # RNA-seq as the key
         Ys = []
