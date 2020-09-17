@@ -62,16 +62,17 @@ class LoadData(GeneExpressionDataset):
                              "atac_barcodes", "atac_names"
                              )
         super().__init__()
-        print("hello")
         if not delayed_populating:
-            print("not delay")
             self.populate()
 
     def populate(self):
         logger.info("Preprocessing joint profiling dataset.")
         if not self._input_check():
+            print("hello")
             logger.debug("Please reload your dataset.")
             return
+        else:
+            print("Hello2")
         joint_profiles = {}
         if len(self.dataset.keys()) == 2:
             for _key in self.dataset.keys():
