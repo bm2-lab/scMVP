@@ -63,6 +63,7 @@ class LoadData(GeneExpressionDataset):
                              )
         super().__init__()
         if not delayed_populating:
+            print("not delay")
             self.populate()
 
     def populate(self):
