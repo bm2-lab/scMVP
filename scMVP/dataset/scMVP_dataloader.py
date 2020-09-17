@@ -259,7 +259,7 @@ class SnareDemo(LoadData):
         elif dataset_name=="AdBrainCortex" or dataset_name=="P0_BrainCortex":
             super().__init__(dataset=available_datasets[dataset_name],
                              data_path=data_path,
-                             dense=True,
+                             dense=False,
                              measurement_names_column=0,
                              remove_extracted_data=False,
                              delayed_populating=False,
