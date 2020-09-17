@@ -74,10 +74,10 @@ class LoadData(GeneExpressionDataset):
         if len(self.dataset.keys()) == 2:
             for _key in self.dataset.keys():
                 if self.gzip:
-                    joint_profiles[_key] = pd.read_csv(self.dataset[_key], sep=self.file_separator,
+                    joint_profiles[_key] = pd.read_csv("{}/{}".format(self.data_path,self.dataset[_key]), sep=self.file_separator,
                         header=0, index_col=0)
                 else:
-                    joint_profiles[_key] = pd.read_csv(self.dataset[_key], sep=self.file_separator,
+                    joint_profiles[_key] = pd.read_csv("{}/{}".format(self.data_path,self.dataset[_key]), sep=self.file_separator,
                                                        header=0, index_col=0, compression="gzip")
 
         elif len(self.dataset.keys()) == 6:
@@ -85,20 +85,20 @@ class LoadData(GeneExpressionDataset):
                 if self.gzip:
                     if _key.endswith("mtx.gz"):
                         if self.dense:
-                            joint_profiles[_key] = sp_io.mmread(self.dataset[_key]).T
+                            joint_profiles[_key] = sp_io.mmread("{}/{}".format(self.data_path,self.dataset[_key])).T
                         else:
-                            joint_profiles[_key] = csr_matrix(sp_io.mmread(self.dataset[_key]).T)
+                            joint_profiles[_key] = csr_matrix(sp_io.mmread("{}/{}".format(self.data_path,self.dataset[_key])).T)
                     else:
-                        pd.read_csv(self.dataset[_key], sep=self.file_separator,
+                        pd.read_csv("{}/{}".format(self.data_path,self.dataset[_key]), sep=self.file_separator,
                                     compression="gzip", header=None)
                 else:
                     if _key.endswith("mtx"):
                         if self.dense:
-                            joint_profiles[_key] = sp_io.mmread(self.dataset[_key]).T
+                            joint_profiles[_key] = sp_io.mmread("{}/{}".format(self.data_path,self.dataset[_key])).T
                         else:
-                            joint_profiles[_key] = csr_matrix(sp_io.mmread(self.dataset[_key]).T)
+                            joint_profiles[_key] = csr_matrix(sp_io.mmread("{}/{}".format(self.data_path,self.dataset[_key])).T)
                     else:
-                        pd.read_csv(self.dataset[_key], sep=self.file_separator, header=None)
+                        pd.read_csv("{}/{}".format(self.data_path,self.dataset[_key]), sep=self.file_separator, header=None)
 
         share_index, gene_barcode_index, atac_barcode_index = np.intersect1d(joint_profiles["gene_barcodes"].values,
                                                                     joint_profiles["atac_barcodes"].values,
