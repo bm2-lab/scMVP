@@ -68,7 +68,7 @@ class LoadData(GeneExpressionDataset):
     def populate(self):
         logger.info("Preprocessing joint profiling dataset.")
         if not self._input_check():
-            logging.debug("Please reload your dataset.")
+            logger.debug("Please reload your dataset.")
             return
         joint_profiles = {}
         if len(self.dataset.keys()) == 2:
@@ -312,7 +312,7 @@ class PariedDemo(LoadData):
                              cell_threshold=1
                              )
         else:
-            logging.info('Please select from {} dataset.'.format("\t".join(available_datasets.keys())))
+            logger.info('Please select from {} dataset.'.format("\t".join(available_datasets.keys())))
 
 
 class SciCarDemo(LoadData):
@@ -357,7 +357,7 @@ class SciCarDemo(LoadData):
                              cell_threshold=1
                              )
         else:
-            logging.info('Please select from {} dataset.'.format("\t".join(available_datasets.keys())))
+            looger.info('Please select from {} dataset.'.format("\t".join(available_datasets.keys())))
 
 
 # obselete demo
