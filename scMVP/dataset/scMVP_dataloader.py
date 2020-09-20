@@ -111,9 +111,9 @@ class LoadData(GeneExpressionDataset):
 
         ## 200920 gene barcode file may include more than 1 column
         if joint_profiles["gene_barcodes"].shape[1] > 1:
-            joint_profiles["gene_barcodes"] = joint_profiles["gene_barcodes"].iloc[:,0]
+            joint_profiles["gene_barcodes"] = pd.DataFrame(joint_profiles["gene_barcodes"].iloc[:,0])
         if joint_profiles["atac_barcodes"].shape[1] > 1:
-            joint_profiles["atac_barcodes"] = joint_profiles["atac_barcodes"].iloc[:,0]
+            joint_profiles["atac_barcodes"] = pd.DataFrame(joint_profiles["atac_barcodes"].iloc[:,0])
         share_index, gene_barcode_index, atac_barcode_index = np.intersect1d(joint_profiles["gene_barcodes"].values,
                                                                     joint_profiles["atac_barcodes"].values,
                                                                     return_indices=True)
