@@ -7,7 +7,7 @@ from scMVP.dataset.dataset import (
 from scMVP.dataset.geneDataset import geneDataset
 
 from scMVP.dataset.scMVP_dataloader import \
-    LoadData, SciCarDemo, SnareDemo, PariedDemo
+    LoadData, SciCarDemo, SnareDemo, PairedDemo
 from scMVP.dataset.pairedSeqDataset import pairedSeqDataset
 
 from scMVP.dataset.snareDataset import snareDataset
@@ -28,5 +28,5 @@ __all__ = [
     "LoadData",
     "SnareDemo",
     "SciCarDemo",
-    "PariedDemo"
+    "PairedDemo"
 ]

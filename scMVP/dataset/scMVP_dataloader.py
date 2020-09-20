@@ -103,10 +103,17 @@ class LoadData(GeneExpressionDataset):
                                                            sep=self.file_separator,
                                                            compression="gzip", header=None)
                 else:
-                    joint_profiles[_key] = pd.read_csv("{}/{}".format(self.data_path,self.dataset[_key]), sep=self.file_separator, header=None)
+                    joint_profiles[_key] = pd.read_csv("{}/{}".format(self.data_path,self.dataset[_key]),
+                                                       sep=self.file_separator, header=None)
 
         else:
             logger.info("more than 6 inputs.")
+
+        ## 200920 gene barcode file may include more than 1 column
+        if joint_profiles["gene_barcodes"].shape[1] > 1:
+            joint_profiles["gene_barcodes"] = joint_profiles["gene_barcodes"].iloc[:,0]
+        if joint_profiles["atac_barcodes"].shape[1] > 1:
+            joint_profiles["atac_barcodes"] = joint_profiles["atac_barcodes"].iloc[:,0]
         share_index, gene_barcode_index, atac_barcode_index = np.intersect1d(joint_profiles["gene_barcodes"].values,
                                                                     joint_profiles["atac_barcodes"].values,
                                                                     return_indices=True)
@@ -265,7 +272,7 @@ class SnareDemo(LoadData):
             logger.info('Please select from "CellLineMixture", "AdBrainCortex" or "P0_BrainCortex" dataset.')
 
 
-class PariedDemo(LoadData):
+class PairedDemo(LoadData):
 
     def __init__(self, dataset_name: str = None, data_path: str = "/dataset"):
         urls = [
