@@ -315,8 +315,8 @@ class PairedDemo(LoadData):
                              remove_extracted_data = False,
                              delayed_populating = False,
                              gzipped = False,
-                             atac_threshold = 0.0005,
-                             cell_threshold = 1
+                             atac_threshold = 0.005,
+                             cell_threshold = 100
                              )
         elif dataset_name=="Adult_Cerebral" or dataset_name=="Fetal_Forebrain":
             super().__init__(dataset=available_datasets[dataset_name],
@@ -326,8 +326,8 @@ class PairedDemo(LoadData):
                              remove_extracted_data=False,
                              delayed_populating=False,
                              gzipped=False,
-                             atac_threshold=0.0005,
-                             cell_threshold=1
+                             atac_threshold=0.005,
+                             cell_threshold=100
                              )
         else:
             logger.info('Please select from {} dataset.'.format("\t".join(available_datasets.keys())))
