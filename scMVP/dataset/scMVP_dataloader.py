@@ -283,41 +283,41 @@ class PairedDemo(LoadData):
 
         available_datasets = {
             "CellLineMixture": {
-                "gene_barcodes": "Cell_Mix_RNA/genes.tsv",
+                "gene_names": "Cell_Mix_RNA/genes.tsv",
                 "gene_expression": "Cell_Mix_RNA/matrix.mtx",
-                "gene_names": "Cell_Mix_RNA/barcodes.tsv",
-                "atac_barcodes": "Cell_Mix_DNA/genes.tsv",
+                "gene_barcodes": "Cell_Mix_RNA/barcodes.tsv",
+                "atac_names": "Cell_Mix_DNA/genes.tsv",
                 "atac_expression": "Cell_Mix_DNA/matrix.mtx",
-                "atac_names": "Cell_Mix_DNA/barcodes.tsv"
+                "atac_barcodes":"Cell_Mix_DNA/barcodes.tsv"
             },
             "Adult_Cerebral": {
-                "gene_barcodes": "Adult_CTX_RNA/genes.tsv",
+                "gene_names": "Adult_CTX_RNA/genes.tsv",
                 "gene_expression": "Adult_CTX_RNA/matrix.mtx",
-                "gene_names": "Adult_CTX_RNA/barcodes.tsv",
-                "atac_barcodes": "Adult_CTX_DNA/genes.tsv",
+                "gene_barcodes": "Adult_CTX_RNA/barcodes.tsv",
+                "atac_names": "Adult_CTX_DNA/genes.tsv",
                 "atac_expression": "Adult_CTX_DNA/matrix.mtx",
-                "atac_names": "Adult_CTX_DNA/barcodes.tsv"
+                "atac_barcodes": "Adult_CTX_DNA/barcodes.tsv"
             },
             "Fetal_Forebrain": {
-                "gene_barcodes": "FB_RNA/genes.tsv",
+                "gene_names": "FB_RNA/genes.tsv",
                 "gene_expression": "FB_RNA/matrix.mtx",
-                "gene_names": "FB_RNA/barcodes.tsv",
-                "atac_barcodes": "FB_DNA/genes.tsv",
+                "gene_barcodes": "FB_RNA/barcodes.tsv",
+                "atac_names": "FB_DNA/genes.tsv",
                 "atac_expression": "FB_DNA/matrix.mtx",
-                "atac_names": "FB_DNA/barcodes.tsv"
+                "atac_barcodes": "FB_DNA/barcodes.tsv"
             }
         }
         if dataset_name=="CellLineMixture":
             super().__init__(dataset = available_datasets[dataset_name],
-                         data_path= data_path,
-                         dense = False,
-                         measurement_names_column = 0,
-                         remove_extracted_data = False,
-                         delayed_populating = False,
-                         gzipped = False,
-                         atac_threshold = 0.0005,
-                         cell_threshold = 1
-                         )
+                             data_path= data_path,
+                             dense = False,
+                             measurement_names_column = 0,
+                             remove_extracted_data = False,
+                             delayed_populating = False,
+                             gzipped = False,
+                             atac_threshold = 0.0005,
+                             cell_threshold = 1
+                             )
         elif dataset_name=="Adult_Cerebral" or dataset_name=="Fetal_Forebrain":
             super().__init__(dataset=available_datasets[dataset_name],
                              data_path=data_path,
