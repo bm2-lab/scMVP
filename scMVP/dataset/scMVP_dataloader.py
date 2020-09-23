@@ -1,6 +1,5 @@
 import logging
 import os
-import tarfile
 import urllib
 import numpy as np
 import pandas as pd
@@ -15,6 +14,7 @@ available_specification = ["filtered", "raw"]
 
 
 class LoadData(GeneExpressionDataset):
+
     """
     Dataset format:
     dataset = {
@@ -31,7 +31,6 @@ class LoadData(GeneExpressionDataset):
     "atac_expression":xxx,
     }
     """
-
     def __init__(self,
         dataset: dict = None,
         data_path: str = "dataset/",
@@ -42,7 +41,8 @@ class LoadData(GeneExpressionDataset):
         file_separator: str = "\t",
         gzipped: bool = False,
         atac_threshold: float = 0.0001, # express in over 0.01%
-        cell_threshold: int = 1 # filtering cells less than minimum count
+        cell_threshold: int = 1, # filtering cells less than minimum count
+        cell_meta: pd.DataFrame = None,
                  ):
 
         self.dataset = dataset
@@ -61,6 +61,7 @@ class LoadData(GeneExpressionDataset):
                              "gene_barcodes", "gene_names",
                              "atac_barcodes", "atac_names"
                              )
+        self.cell_meta = cell_meta
         super().__init__()
         if not delayed_populating:
             self.populate()
@@ -111,25 +112,43 @@ class LoadData(GeneExpressionDataset):
 
         ## 200920 gene barcode file may include more than 1 column
         if joint_profiles["gene_names"].shape[1] > 1:
-            joint_profiles["gene_names"] = pd.DataFrame(joint_profiles["gene_names"].iloc[:,0])
+            joint_profiles["gene_names"] = pd.DataFrame(joint_profiles["gene_names"].iloc[:,1])
         if joint_profiles["atac_names"].shape[1] > 1:
-            joint_profiles["atac_names"] = pd.DataFrame(joint_profiles["atac_names"].iloc[:,0])
+            joint_profiles["atac_names"] = pd.DataFrame(joint_profiles["atac_names"].iloc[:,1])
         share_index, gene_barcode_index, atac_barcode_index = np.intersect1d(joint_profiles["gene_barcodes"].values,
                                                                     joint_profiles["atac_barcodes"].values,
                                                                     return_indices=True)
+        if self.cell_meta:
+            if self.cell_meta.shape[1] <= 2:
+                logger.info("Please use cell id in first column and give ata least 2 columns.")
+                return
+            meta_cell_id = self.cell_meta.iloc[:,1].values
+            meta_share, meta_barcode_index, share_barcode_index =\
+                np.intersect1d(meta_cell_id,
+                share_index, return_indices=True)
+            _gene_barcode_index = gene_barcode_index[share_barcode_index]
+            _atac_barcode_index = atac_barcode_index[share_barcode_index]
+            if len(_gene_barcode_index) < 2: # no overlaps
+                logger.info("Inconsistent metadata to expression data.")
+                return
+            tmp = joint_profiles["gene_barcodes"]
+            joint_profiles["gene_barcodes"] = tmp.loc[_gene_barcode_index, :]
+            temp = joint_profiles["atac_barcodes"]
+            joint_profiles["atac_barcodes"] = temp.loc[_atac_barcode_index, :]
 
-        # reorder rnaseq cell meta
-        tmp = joint_profiles["gene_barcodes"]
-        joint_profiles["gene_barcodes"] = tmp.loc[gene_barcode_index,:]
+        else:
+            # reorder rnaseq cell meta
+            tmp = joint_profiles["gene_barcodes"]
+            joint_profiles["gene_barcodes"] = tmp.loc[gene_barcode_index,:]
+            temp = joint_profiles["atac_barcodes"]
+            joint_profiles["atac_barcodes"] = temp.loc[atac_barcode_index, :]
+
         gene_tab = joint_profiles["gene_expression"]
         if issparse(gene_tab):
             joint_profiles["gene_expression"] = gene_tab[gene_barcode_index, :].A
         else:
             joint_profiles["gene_expression"] = gene_tab[gene_barcode_index, :]
 
-
-        temp = joint_profiles["atac_barcodes"]
-        joint_profiles["atac_barcodes"] = temp.loc[atac_barcode_index, :]
         temp = joint_profiles["atac_expression"]
         reorder_atac_exp = temp[atac_barcode_index, :]
         binary_index = reorder_atac_exp > 1
@@ -159,6 +178,17 @@ class LoadData(GeneExpressionDataset):
             columns=joint_profiles["atac_names"].astype(np.str),
         )
         Ys.append(measurement)
+        # Add cell metadata
+        if self.cell_meta:
+            for l_index, label in enumerate(self.cell_meta.columns.values.to_list()):
+                if l_index >0:
+                    label_measurement = CellMeasurement(
+                        name="{}_label".format(label),
+                        data=self.cell_meta.iloc[meta_barcode_index,l_index],
+                        columns_attr_name=label,
+                        columns=self.cell_meta.iloc[meta_barcode_index, l_index]
+                    )
+                    Ys.append(label_measurement)
 
         cell_attributes_dict = {
             "barcodes": np.squeeze(np.asarray(joint_profiles["gene_barcodes"], dtype=str))
@@ -200,7 +230,7 @@ class LoadData(GeneExpressionDataset):
                 return False
         return True
 
-    def _download(url: str, save_path: str, filename: str):
+    def _download(self, url: str, save_path: str, filename: str):
         """Writes data from url to file."""
         if os.path.exists(os.path.join(save_path, filename)):
             logger.info("File %s already downloaded" % (os.path.join(save_path, filename)))
@@ -217,6 +247,18 @@ class LoadData(GeneExpressionDataset):
                 if not block:
                     break
                 yield block
+
+    def _add_cell_meta(self, cell_meta, filter=False):
+        cell_ids = cell_meta.iloc[:,1].values
+        share_index, meta_barcode_index, gene_barcode_index = \
+            np.intersect1d(cell_ids,self.barcodes,return_indices=True)
+        if len(share_index) <=1:
+            logger.info("No consistent cell IDs!")
+            return
+        if len(share_index) < len(self.barcodes):
+            logger.info("{} cells match metadata.".format(len(share_index)))
+            return
+
 
 
 class SnareDemo(LoadData):
@@ -249,7 +291,7 @@ class SnareDemo(LoadData):
             super(SnareDemo, self).__init__(dataset = available_datasets[dataset_name],
                          data_path= data_path,
                          dense = False,
-                         measurement_names_column = 0,
+                         measurement_names_column = 1,
                          remove_extracted_data = False,
                          delayed_populating = False,
                          file_separator = "\t",
@@ -261,7 +303,7 @@ class SnareDemo(LoadData):
             super(SnareDemo, self).__init__(dataset=available_datasets[dataset_name],
                              data_path=data_path,
                              dense=False,
-                             measurement_names_column=0,
+                             measurement_names_column=1,
                              remove_extracted_data=False,
                              delayed_populating=False,
                              gzipped=True,
@@ -311,7 +353,7 @@ class PairedDemo(LoadData):
             super().__init__(dataset = available_datasets[dataset_name],
                              data_path= data_path,
                              dense = False,
-                             measurement_names_column = 0,
+                             measurement_names_column = 1,
                              remove_extracted_data = False,
                              delayed_populating = False,
                              gzipped = False,
@@ -322,7 +364,7 @@ class PairedDemo(LoadData):
             super().__init__(dataset=available_datasets[dataset_name],
                              data_path=data_path,
                              dense=False,
-                             measurement_names_column=0,
+                             measurement_names_column = 1,
                              remove_extracted_data=False,
                              delayed_populating=False,
                              gzipped=False,
