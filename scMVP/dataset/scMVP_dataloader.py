@@ -355,7 +355,7 @@ class PairedDemo(LoadData):
             if os.path.exists("{}/Cell_embeddings.xls".format(data_path)):
                 cell_embed = pd.read_csv("{}/Cell_embeddings.xls".format(data_path), sep='\t')
                 cell_embed_info = cell_embed.iloc[:, 0:2]
-                cell_embed_info.columns = ["Cell_ID","Label"]
+                cell_embed_info.columns = ["Cell_ID","Cluster"]
             else:
                 logger.info("Cannot find cell embedding files for Paried-seq Demo.")
                 return
@@ -374,7 +374,7 @@ class PairedDemo(LoadData):
             if os.path.exists("{}/Cell_embeddings.xls".format(data_path)):
                 cell_embed = pd.read_csv("{}/Cell_embeddings.xls".format(data_path), sep='\t')
                 cell_embed_info = cell_embed.iloc[:, ["ID","Cluster"]]
-                cell_embed_info.columns = ["Cell_ID","Label"]
+                cell_embed_info.columns = ["Cell_ID","Cluster"]
             else:
                 logger.info("Cannot find cell embedding files for Paried-seq Demo.")
                 return
