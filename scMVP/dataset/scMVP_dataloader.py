@@ -179,7 +179,7 @@ class LoadData(GeneExpressionDataset):
         )
         Ys.append(measurement)
         # Add cell metadata
-        if self.cell_meta:
+        if isinstance(self.cell_meta,pd.DataFrame):
             for l_index, label in enumerate(self.cell_meta.columns.values.to_list()):
                 if l_index >0:
                     label_measurement = CellMeasurement(
