@@ -122,7 +122,7 @@ class LoadData(GeneExpressionDataset):
             if self.cell_meta.shape[1] < 2:
                 logger.info("Please use cell id in first column and give ata least 2 columns.")
                 return
-            meta_cell_id = self.cell_meta.iloc[:,1].values
+            meta_cell_id = self.cell_meta.iloc[:,0].values
             meta_share, meta_barcode_index, share_barcode_index =\
                 np.intersect1d(meta_cell_id,
                 share_index, return_indices=True)
