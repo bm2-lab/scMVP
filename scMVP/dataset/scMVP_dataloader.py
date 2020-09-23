@@ -119,7 +119,7 @@ class LoadData(GeneExpressionDataset):
                                                                     joint_profiles["atac_barcodes"].values,
                                                                     return_indices=True)
         if isinstance(self.cell_meta,pd.DataFrame):
-            if self.cell_meta.shape[1] <= 2:
+            if self.cell_meta.shape[1] < 2:
                 logger.info("Please use cell id in first column and give ata least 2 columns.")
                 return
             meta_cell_id = self.cell_meta.iloc[:,1].values
