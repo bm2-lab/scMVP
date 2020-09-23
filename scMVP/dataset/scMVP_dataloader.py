@@ -118,7 +118,7 @@ class LoadData(GeneExpressionDataset):
         share_index, gene_barcode_index, atac_barcode_index = np.intersect1d(joint_profiles["gene_barcodes"].values,
                                                                     joint_profiles["atac_barcodes"].values,
                                                                     return_indices=True)
-        if self.cell_meta:
+        if isinstance(self.cell_meta,pd.DataFrame):
             if self.cell_meta.shape[1] <= 2:
                 logger.info("Please use cell id in first column and give ata least 2 columns.")
                 return
