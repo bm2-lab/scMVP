@@ -349,7 +349,15 @@ class PairedDemo(LoadData):
                 "atac_barcodes": "FB_DNA/barcodes.tsv"
             }
         }
-        if dataset_name=="CellLineMixture":
+
+        if dataset_name=="CellLineMixture" or dataset_name=="Fetal_Forebrain":
+            if os.path.exists("{}/Cell_embeddings.xls".format(data_path)):
+                cell_embed = pd.read_csv("{}/Cell_embeddings.xls".format(data_path), sep='\t')
+                cell_embed_info = cell_embed.iloc[:, 0:2]
+                cell_embed_info.columns = ["Cell_ID","Label"]
+            else:
+                logger.info("Cannot find cell embedding files for Paried-seq Demo.")
+                return
             super().__init__(dataset = available_datasets[dataset_name],
                              data_path= data_path,
                              dense = False,
@@ -358,9 +366,17 @@ class PairedDemo(LoadData):
                              delayed_populating = False,
                              gzipped = False,
                              atac_threshold = 0.005,
-                             cell_threshold = 100
+                             cell_threshold = 100,
+                             cell_meta=cell_embed_info
                              )
-        elif dataset_name=="Adult_Cerebral" or dataset_name=="Fetal_Forebrain":
+        elif dataset_name=="Adult_Cerebral":
+            if os.path.exists("{}/Cell_embeddings.xls".format(data_path)):
+                cell_embed = pd.read_csv("{}/Cell_embeddings.xls".format(data_path), sep='\t')
+                cell_embed_info = cell_embed.iloc[:, ["ID","Cluster"]]
+                cell_embed_info.columns = ["Cell_ID","Label"]
+            else:
+                logger.info("Cannot find cell embedding files for Paried-seq Demo.")
+                return
             super().__init__(dataset=available_datasets[dataset_name],
                              data_path=data_path,
                              dense=False,
@@ -369,7 +385,8 @@ class PairedDemo(LoadData):
                              delayed_populating=False,
                              gzipped=False,
                              atac_threshold=0.005,
-                             cell_threshold=100
+                             cell_threshold=100,
+                             cell_meta=cell_embed_info
                              )
         else:
             logger.info('Please select from {} dataset.'.format("\t".join(available_datasets.keys())))
