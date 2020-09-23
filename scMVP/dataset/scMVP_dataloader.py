@@ -189,6 +189,7 @@ class LoadData(GeneExpressionDataset):
                         columns=self.cell_meta.iloc[meta_barcode_index, l_index]
                     )
                     Ys.append(label_measurement)
+                    logger.info("Loading {} into dataset.".format(label))
 
         cell_attributes_dict = {
             "barcodes": np.squeeze(np.asarray(joint_profiles["gene_barcodes"], dtype=str))
