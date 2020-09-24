@@ -26,22 +26,33 @@ Try ```import scMVP``` in your python console and start your first [**tutorial**
 ## Data preparation
 Your should first prepare your input files, example is as follows:
 
-1. "XX_cell.tsv": cell barcodes of RNA <br>
-2. "XX_gene.count.mtx" or  "XX_gene.count.tsv": gene expression matrix <br>
-3. "XX_cDNA.genes.tsv": gene names <br>
-4. "XX_cell.ATAC.tsv": cell barcodes of ATAC <br>
-5. "XX_chromatin.count.mtx" or  "XX_chromatin.count.tsv": atac expression matrix  <br>
-6. "XX_peak.tsv": peak names/ids <br>
+1. "XX.tsv": cell barcodes of RNA <br>
+2. "XX.mtx" or  "XX.tsv": gene expression matrix <br>
+3. "XX.tsv": gene names <br>
+4. "XX.tsv": cell barcodes of ATAC <br>
+5. "XX.mtx" or  "XX.tsv": atac expression matrix  <br>
+6. "XX.tsv": peak names/ids <br>
+
+**OR** <br>
+<br>
+1. "XX.tsv": gene expression dense matrix with rownames(genes) and colnames(barcodes)<br>
+2. "XX.tsv": atac expression dense matrix with rownames(genes) and colnames(barcodes)<br>
 
 **Optional:**<br>
--  "XX_embeddings.xls": given cell annotation labels. <br>
+- Custom cell annotation labels or other labels. <br>
 
 
 ### Bulit in dataset:
-- dataset.scienceDataset(): sci-CAR paper dataset.<br>
-- dataset.pairedSeqDataset(): Paired-seq paper dataset.<br>
-- dataset.snareDataset(): SNARE-seq dataset.<br>
+- dataset.SciCarDemo(): sci-CAR paper dataset.<br>
+- dataset.PairedDemo(): Paired-seq paper dataset.<br>
+- dataset.SnareDemo(): SNARE-seq paper dataset.<br>
 
+### pretrained models:<br>
+Download link: [baidu cloud disk](https://pan.baidu.com/s/1ENhmTKJS44aHu0uZkEqxAA)<br>
+Download code: q4jr<br>
+- GMM.pkl pre-train GMM model before multi-VAE model <br>
+- mmvae.pkl multi-VAE model for <br>
+- vae.pkl gene cluster model(optional) <br>
 
 ## User tutorial
 
@@ -51,7 +62,7 @@ Your should first prepare your input files, example is as follows:
 2. Using scMVP for snare-seq mouse cerebral cortex P0 dataset. [**demo**](demos/scMVP_regress_tutorial.ipynb)
 - Perform CRE-gene analysis with PLS-regression.
 
-3. Using scMVP on customize joint profiling dataset.[**demo**](demos/scMVP_dataloader.ipynb)
+3. Load published or new joint profiling dataset to scMVP. [**demo**](demos/scMVP_dataloader.ipynb)
 - Load and analyze your own data.
 
 
