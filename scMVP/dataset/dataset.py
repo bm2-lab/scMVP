@@ -984,8 +984,12 @@ class GeneExpressionDataset(Dataset):
         )
         self.update_cells(subset_cells)
 
-    def filter_cells_by_count(self, min_count: int = 1):
-        mask_cells_to_keep = np.squeeze(np.asarray(self.X.sum(axis=1) >= min_count))
+    def filter_cells_by_count(self,datatype:str = None,  min_count: int = 1):
+        if datatype == "atac_seq":
+            mask_cells_to_keep = np.squeeze(np.asarray(self.X.sum(axis=1) >= min_count))
+        else:
+            # squeezing necessary in case of sparse matrix
+            mask_cells_to_keep = np.squeeze(np.asarray(self.X.sum(axis=1) >= min_count))
         self.update_cells(mask_cells_to_keep)
 
     def filter_cell_types(self, cell_types: Union[List[str], List[int], np.ndarray]):

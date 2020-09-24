@@ -386,7 +386,7 @@ class PairedDemo(LoadData):
                              delayed_populating=False,
                              gzipped=False,
                              atac_threshold=0.005,
-                             cell_threshold=100,
+                             cell_threshold=1,
                              cell_meta=cell_embed_info
                              )
         else:
