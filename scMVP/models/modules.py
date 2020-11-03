@@ -315,7 +315,7 @@ class Multi_Decoder(nn.Module):
         p_atac_dropout = self.atac_dropout_decoder(p_atac)
 
         libaray_atac = self.libaray_atac_scale_decoder(libaray_temp)
-        p_atac_mean = torch.exp(libaray_atac.clamp(13)) * p_atac_scale # for zinp and zip loss
+        p_atac_mean = torch.exp(libaray_atac.clamp(max=13)) * p_atac_scale # for zinp and zip loss
         #p_atac_mean = libaray_atac * p_atac_scale # for binary loss
 
         return p_rna_scale, p_rna_r, p_rna_rate, p_rna_dropout, p_atac_scale, p_atac_r, p_atac_mean, p_atac_dropout
