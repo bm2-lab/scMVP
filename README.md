@@ -48,21 +48,17 @@ Your should first prepare your input files, example is as follows:
 - dataset.SnareDemo(): SNARE-seq paper dataset.<br>
 
 ### pretrained models:<br>
-Download link: [baidu cloud disk](https://pan.baidu.com/s/1ENhmTKJS44aHu0uZkEqxAA)<br>
-Download code: q4jr<br>
+Download link: [baidu cloud disk](https://pan.baidu.com/s/1Lk_BRyHq8Re_zpXWBMkLqA)<br>
+Download code: ki9q<br>
 - GMM.pkl pre-train GMM model before multi-VAE model <br>
-- mmvae.pkl multi-VAE model for <br>
-- vae.pkl gene cluster model(optional) <br>
+- multi_vae.pkl multi-VAE model for scMVP <br>
 
 ## User tutorial
 
 1. Using scMVP for sci-CAR cell line mixture. [**demo**](demos/scMVP_tutorial.ipynb)
 - Basic analysis modules with multi-VAE.
 
-2. Using scMVP for snare-seq mouse cerebral cortex P0 dataset. [**demo**](demos/scMVP_regress_tutorial.ipynb)
-- Perform CRE-gene analysis with PLS-regression.
-
-3. Load published or new joint profiling dataset to scMVP. [**demo**](demos/scMVP_dataloader.ipynb)
+2. Load published or new joint profiling dataset to scMVP. [**demo**](demos/scMVP_dataloader.ipynb)
 - Load and analyze your own data.
 
 
