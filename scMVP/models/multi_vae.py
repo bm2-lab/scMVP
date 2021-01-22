@@ -47,21 +47,23 @@ class Multi_VAE(nn.Module):
     """
 
     def __init__(
-        self,
-        RNA_input: int,
-        ATAC_input: int = 0,
-        n_batch: int = 0,
-        n_labels: int = 0,
-        n_hidden: int = 128,
-        n_latent: int = 10,
-        n_layers: int = 1,
-        n_centroids: int = 20,
-        n_alfa: float = 1.0,
-        dropout_rate: float = 0.1,
-        mode = "vae",
-        dispersion: str = "gene",
-        log_variational: bool = True,
-        reconstruction_loss: str = "zinb",
+            self,
+            RNA_input: int,
+            ATAC_input: int = 0,
+            n_batch: int = 0,
+            n_labels: int = 0,
+            n_hidden: int = 128,
+            n_latent: int = 10,
+            n_layers: int = 1,
+            n_centroids: int = 20,
+            n_alfa: float = 1.0,
+            dropout_rate: float = 0.1,
+            mode="vae",
+            dispersion: str = "gene",
+            log_variational: bool = True,
+            reconstruction_loss: str = "zinb",
+            isLibrary: bool = True,
+            is_cluster=True
     ):
         super().__init__()
         self.mode = mode
@@ -76,6 +78,8 @@ class Multi_VAE(nn.Module):
         self.n_labels = n_labels
         self.n_centroids = n_centroids
         self.alfa = n_alfa
+        self.isLibrary = isLibrary
+        self.is_cluster = is_cluster
 
         if self.dispersion == "gene":
             self.px_r = torch.nn.Parameter(torch.randn(RNA_input))
@@ -124,9 +128,14 @@ class Multi_VAE(nn.Module):
                                  )
 
             # init c_params
-            self.pi = nn.Parameter(torch.ones(n_centroids) / n_centroids)  # pc
-            self.mu_c = nn.Parameter(torch.zeros(n_latent, n_centroids))  # mu
-            self.var_c = nn.Parameter(torch.ones(n_latent, n_centroids))  # sigma^2
+            self.pi = nn.Parameter(torch.ones(n_centroids) / n_centroids, requires_grad=True)  # pc
+            self.mu_c = nn.Parameter(torch.zeros(n_latent, n_centroids), requires_grad=True)  # mu
+            self.var_c = nn.Parameter(torch.ones(n_latent, n_centroids), requires_grad=True)  # sigma^2
+            self.counter = nn.Parameter(torch.zeros(2), requires_grad=False)  # sigma^2
+
+            # self.temp_pi = nn.Parameter(torch.zeros(n_centroids), requires_grad=False)  # pc
+            # self.temp_mu_c = nn.Parameter(torch.zeros(n_latent, n_centroids), requires_grad=False)  # mu
+            # self.temp_var_c = nn.Parameter(torch.zeros(n_latent, n_centroids), requires_grad=False)  # sigma^2
 
             self.RNA_encoder = Encoder(
                 RNA_input,
@@ -142,6 +151,11 @@ class Multi_VAE(nn.Module):
                 n_hidden=n_hidden,
                 dropout_rate=dropout_rate,
             )
+            if self.isLibrary == True:
+                # l encoder goes from n_input-dimensional data to 1-d library size
+                self.l_encoder = Encoder(
+                    RNA_input, 1, n_layers=1, n_hidden=n_hidden, dropout_rate=dropout_rate
+                )
             self.RNA_ATAC_encoder = Multi_Encoder(
                 RNA_input,
                 ATAC_input,
@@ -157,6 +171,8 @@ class Multi_VAE(nn.Module):
                 n_cat_list=[n_batch],
                 n_layers=n_layers,
                 n_hidden=n_hidden,
+                is_cluster=is_cluster,
+                n_cluster=n_centroids
             )
         else:
             raise ValueError(
@@ -165,7 +181,9 @@ class Multi_VAE(nn.Module):
                 "{}.format(self.mode)"
             )
 
-
+    def get_params(self):
+        params = [self.pi, self.mu_c, self.var_c]
+        return params
 
     def get_latents(self, x_rna, y=None, x_atac=None):
         r""" returns the result of ``sample_from_posterior_z`` inside a list
@@ -189,8 +207,8 @@ class Multi_VAE(nn.Module):
         """
         if self.log_variational:
             x[0] = torch.log(1 + x[0])
-            x[1] = torch.log(1 + x[1])
-        #qz_m, qz_v, z = self.z_encoder(x, y)  # y only used in VAEC
+            # x[1] = torch.log(1 + x[1])
+        # qz_m, qz_v, z = self.z_encoder(x, y)  # y only used in VAEC
         qz_rna_m, qz_rna_v, rna_z = self.RNA_encoder(x[0], y)
         qz_atac_m, qz_atac_v, atac_z = self.ATAC_encoder(x[1], y)
         qz_m, qz_v, z = self.RNA_ATAC_encoder(x, y)
@@ -227,8 +245,7 @@ class Multi_VAE(nn.Module):
         outputs = self.inference(x=x, batch_index=batch_index, y=y, n_samples=n_samples)
         return outputs["p_rna_scale"], outputs["p_atac_scale"]
 
-
-    def get_sample_rate(self, x, batch_index=None, y=None, n_samples=1):
+    def get_sample_rate(self, x, batch_index=None, y=None, n_samples=1, local_l_mean=None, local_l_var=None):
         r"""Returns the tensor of means of the negative binomial distribution
 
         :param x: tensor of values with shape ``(batch_size, n_input)``
@@ -238,8 +255,9 @@ class Multi_VAE(nn.Module):
         :return: tensor of means of the negative binomial distribution with shape ``(batch_size, n_input)``
         :rtype: :py:class:`torch.Tensor`
         """
-        outputs = self.inference(x=x, batch_index=batch_index, y=y, n_samples = n_samples)
-        return outputs[ "p_rna_rate"], outputs["p_atac_mean"]
+        outputs = self.inference(x=x, batch_index=batch_index, y=y, n_samples=n_samples, local_l_mean=local_l_mean,
+                                 local_l_var=local_l_var)
+        return outputs["p_rna_rate"], outputs["p_atac_mean"]
 
     def get_reconstruction_loss(self, x, px_rate, px_r, px_dropout, **kwargs):
         # Reconstruction Loss
@@ -249,19 +267,21 @@ class Multi_VAE(nn.Module):
             reconst_loss = -log_nb_positive(x, px_rate, px_r).sum(dim=-1)
         return reconst_loss
 
-    def get_reconstruction_atac_loss(self, x, mu, dispersion, dropout, type = "zinb", **kwargs):
+    def get_reconstruction_atac_loss(self, x, mu, dispersion, dropout, type="zip", **kwargs):
         if type == "zinb":
             reconst_loss = -log_zinb_positive(x, mu, dispersion, dropout).sum(dim=-1)
         elif type == "zip":
             reconst_loss = - log_zip_positive(x, mu, dropout).sum(dim=-1)
-        else:
+        elif type == "zip_bu":
+            reconst_loss = - log_zip_positive(x, mu, dropout).sum(dim=-1) - binary_cross_entropy(x, mu).sum(dim=-1)
+        elif type == "bu":
             reconst_loss = - binary_cross_entropy(x, mu).sum(dim=-1)
         return reconst_loss
 
     def scale_from_z(self, sample_batch, fixed_batch):
         if self.log_variational:
             sample_batch[0] = torch.log(1 + sample_batch[0])
-            sample_batch[1] = torch.log(1 + sample_batch[1])
+            # sample_batch[1] = torch.log(1 + sample_batch[1])
 
         qz_rna_m, qz_rna_v, rna_z = self.RNA_encoder(sample_batch[0])
         qz_atac_m, qz_atac_v, atac_z = self.ATAC_encoder(sample_batch[1])
@@ -277,19 +297,19 @@ class Multi_VAE(nn.Module):
         Init SCALE model with GMM model parameters
         """
         if z is None:
-            raise("Input data is empty!")
+            raise ("Input data is empty!")
 
         gmm = GaussianMixture(n_components=self.n_centroids, covariance_type='diag')
-        #z = self.encodeBatch(dataloader, device)
+        # z = self.encodeBatch(dataloader, device)
         gmm.fit(z)
+        # gmm.weights_
         self.mu_c.data.copy_(torch.from_numpy(gmm.means_.T.astype(np.float32)))
         self.var_c.data.copy_(torch.from_numpy(gmm.covariances_.T.astype(np.float32)))
         clust_index = gmm.predict(z)
 
         return clust_index
 
-
-    def get_gamma(self, z):
+    def get_gamma(self, z, update=False):
         """
         Inference c from z
 
@@ -299,10 +319,13 @@ class Multi_VAE(nn.Module):
         n_centroids = self.n_centroids
 
         N = z.size(0)
+        z_org = z
         z = z.unsqueeze(2).expand(z.size(0), z.size(1), n_centroids)
-        pi = torch.exp(self.pi.repeat(N, 1))  # NxK
+        # pi = torch.exp(self.pi.repeat(N, 1))  # NxK
+        pi = torch.abs(self.pi.repeat(N, 1))  # NxK
         mu_c = self.mu_c.repeat(N, 1, 1)  # NxDxK
-        var_c = torch.exp(self.var_c.repeat(N, 1, 1))  # NxDxK
+        # var_c = torch.exp(self.var_c.repeat(N, 1, 1))  # NxDxK
+        var_c = torch.abs(self.var_c.repeat(N, 1, 1))  # NxDxK
 
         # p(c,z) = p(c)*p(z|c) as p_c_z
         p_c_z = torch.exp(
@@ -310,10 +333,85 @@ class Multi_VAE(nn.Module):
                                       dim=1)) + 1e-10
         gamma = p_c_z / torch.sum(p_c_z, dim=1, keepdim=True)
 
+        '''
+        gmm_flag = False
+        for name, param in self.named_parameters():
+            if param.requires_grad:
+                gmm_flag = True
+                break
+        '''
+        '''
+        #print("gamma.requires_grad=%d" % int(gamma.requires_grad))
+        #if update and gamma.requires_grad and self.counter.data[0] < 3:
+        if update and gamma.requires_grad:
+
+            update_pi = torch.sum(gamma,dim=0) / gamma.shape[0]
+            update_mu_c = np.true_divide(np.dot(z_org.T.detach().numpy(),gamma.detach().numpy()),torch.sum(gamma,dim=0).repeat(z_org.shape[1],1).detach().numpy())
+            temp = torch.sub(z_org.unsqueeze(2).expand(z.size(0), z.size(1), n_centroids), torch.from_numpy(update_mu_c).repeat(z_org.shape[0],1,1))
+            #aa = z_org.unsqueeze(2).expand(z.size(0), z.size(1), n_centroids)
+            #bb = torch.from_numpy(update_mu_c).repeat(z_org.shape[0],1,1)
+            #cc = gamma.unsqueeze(1).expand(gamma.shape[0],z_org.shape[1],gamma.shape[1])
+            update_var_c = torch.sum(torch.mul(gamma.unsqueeze(1).expand(gamma.shape[0],z_org.shape[1],gamma.shape[1]),torch.mul(temp, temp)),dim=0)
+            update_var_c = torch.div(update_var_c, torch.sum(gamma,dim=0).repeat(z_org.shape[1],1)+1.0e-4)
+
+            update_coeff = 1.0/20
+            update_mu_c = update_coeff*torch.from_numpy(update_mu_c)+(1-update_coeff)*(self.mu_c.data)
+            #update_mu_c = torch.div(
+            #    torch.mul(update_var_c, self.mu_c.data) + torch.mul(torch.from_numpy(update_mu_c),self.var_c.data)
+            #    , torch.mul(update_var_c, self.var_c.data) + 1.0e-6)
+            self.mu_c.data.copy_(update_mu_c)
+            update_var_c = update_coeff*(update_var_c)+(1-update_coeff)*(self.var_c.data)
+            #update_var_c = torch.div(torch.mul(update_var_c, self.var_c.data), update_var_c + self.var_c.data)
+            self.var_c.data.copy_(update_var_c)
+            update_pi = update_coeff*(update_pi)+(1-update_coeff)*(self.pi.data)
+            self.pi.data.copy_(update_pi)
+
+
+            temp_counter = self.counter.data
+            temp_counter[1] = 0
+            self.counter.data.copy_(temp_counter)
+            print(temp_counter[0])
+
+        elif update and (not gamma.requires_grad) and self.counter.data[1] < 1:
+            temp_counter = self.counter.data
+            temp_counter[0] = temp_counter[0]+1
+            temp_counter[1] = 1
+            print(temp_counter)
+            self.counter.data.copy_(temp_counter)
+            if temp_counter[0] >= 3:
+                self.var_c.requires_grad = True
+                self.mu_c.requires_grad = True
+                self.pi.requires_grad = True
+        '''
+        # elif update and gamma.requires_grad and self.counter.data[0] >= 3:
+        #    self.var_c.requires_grad = True
+        #    self.mu_c.requires_grad = True
+        #    self.pi.requires_grad = True
+
+        '''
+
+            #update_mu_c =  torch.from_numpy(update_mu_c) +  (self.temp_mu_c.data)
+            update_mu_c = torch.div(torch.mul(update_var_c,self.temp_mu_c.data)+torch.mul(torch.from_numpy(update_mu_c),self.temp_var_c.data)
+                                    ,torch.mul(update_var_c,self.temp_var_c.data)+1.0e-6)
+            self.temp_mu_c.data.copy_(update_mu_c)
+            #update_var_c =  (update_var_c) +  (self.temp_var_c.data)
+            update_var_c = torch.div(torch.mul(update_var_c,self.temp_var_c.data),update_var_c+self.temp_var_c.data)
+            self.temp_var_c.data.copy_(update_var_c)
+            update_pi = (update_pi +  self.temp_pi.data)
+            self.temp_pi.data.copy_(update_pi)
+        elif  update and (not gamma.requires_grad) and (np.sum(self.temp_pi.data.numpy()) > 0):
+            update_coeff = 1.0 / 10
+            self.mu_c.data.copy_(update_coeff*self.temp_mu_c.data+(1-update_coeff)*(self.mu_c.data))
+            self.var_c.data.copy_(update_coeff*self.temp_var_c.data+(1-update_coeff)*(self.var_c.data))
+            self.pi.data.copy_( update_coeff*self.temp_pi.data/np.sum(self.temp_pi.data.numpy())+(1-update_coeff)*(self.pi.data))
+
+            self.temp_pi.data.copy_(torch.zeros(self.temp_pi.data.shape[0]))
+            self.temp_mu_c.data.copy_(torch.zeros(self.temp_mu_c.data.shape[0], self.temp_mu_c.data.shape[1]))  # mu
+            self.temp_var_c.data.copy_(torch.zeros(self.temp_var_c.data.shape[0], self.temp_var_c.data.shape[1]))  # sigma^2
+            '''
         return gamma, mu_c, var_c, pi
 
-
-    def inference(self, x, batch_index=None, y=None, n_samples=1):
+    def inference(self, x, batch_index=None, y=None, local_l_mean=None, local_l_var=None, update=False, n_samples=1):
         x_ = x
         if len(x_) != 2:
             raise ValueError("Input training data should be 2 data types(RNA and ATAC),"
@@ -323,31 +421,40 @@ class Multi_VAE(nn.Module):
         x_atac = x_[1]
         if self.log_variational:
             x_rna = torch.log(1 + x_rna)
-            x_atac = torch.log(1 + x_atac)
-
+            # x_atac = torch.log(1 + x_atac)
 
         # Sampling
         qz_rna_m, qz_rna_v, rna_z = self.RNA_encoder(x_rna, y)
         qz_atac_m, qz_atac_v, atac_z = self.ATAC_encoder(x_atac, y)
         qz_m, qz_v, z = self.RNA_ATAC_encoder([x_rna, x_atac], y)
-        gamma, mu_c, var_c, pi = self.get_gamma(z)  # , self.n_centroids, c_params)
-        index = torch.argmax(gamma,dim=1)
-        #mu_c_max = torch.tensor([])
-        #var_c_max = torch.tensor([])
+        if self.isLibrary:
+            ql_m, ql_v, l_z = self.l_encoder(x_rna, y)
+        gamma, mu_c, var_c, pi = self.get_gamma(z, update)  # , self.n_centroids, c_params)
+        index = torch.argmax(gamma, dim=1)
+        # mu_c_max = torch.tensor([])
+        # var_c_max = torch.tensor([])
 
-        #for index1 in range(len(index)):
+        # for index1 in range(len(index)):
         #    mu_c_max = torch.cat((mu_c_max, mu_c[index1,:,index[index1]].float()),1)
         #    var_c_max = torch.cat((var_c_max, var_c[index1,:,index[index1]].float()),1)
 
         index1 = [i for i in range(len(index))]
-        mu_c_max = mu_c[index1,:,index]
-        var_c_max = var_c[index1,:,index]
+        mu_c_max = mu_c[index1, :, index]
+        var_c_max = var_c[index1, :, index]
         z_c_max = reparameterize_gaussian(mu_c_max, var_c_max)
 
-        #decoder
-        p_rna_scale, p_rna_r, p_rna_rate, p_rna_dropout, p_atac_scale, p_atac_r, p_atac_mean, p_atac_dropout\
-        = self.RNA_ATAC_decoder(z, z_c_max, y)
+        libary_scale = reparameterize_gaussian(local_l_mean, local_l_var)
+        if self.isLibrary:
+            libary_scale = l_z
+        # decoder
+        p_rna_scale, p_rna_r, p_rna_rate, p_rna_dropout, p_atac_scale, p_atac_r, p_atac_mean, p_atac_dropout \
+            = self.RNA_ATAC_decoder(z, z_c_max, y, libary_scale=libary_scale, gamma=gamma)
+        # = self.RNA_ATAC_decoder(z, z_c_max, y, gamma=gamma)
 
+        rec_rna_mu, rec_rna_v, rec_rna_z = self.RNA_encoder(p_rna_rate, y)
+        gamma_rna_rec, _, _, _ = self.get_gamma(rec_rna_z)
+        rec_atac_mu, rec_atac_v, rec_atac_z = self.ATAC_encoder(p_atac_mean, y)
+        gamma_atac_rec, _, _, _ = self.get_gamma(rec_atac_z)
 
         if self.dispersion == "gene-label":
             p_rna_r = F.linear(
@@ -391,6 +498,12 @@ class Multi_VAE(nn.Module):
             mu_c_max=mu_c_max,
             var_c_max=var_c_max,
             z_c_max=z_c_max,
+            gamma_rna_rec=gamma_rna_rec,
+            gamma_atac_rec=gamma_atac_rec,
+            rec_atac_mu=rec_atac_mu,
+            rec_atac_v=rec_atac_v,
+            rec_rna_mu=rec_rna_mu,
+            rec_rna_v=rec_rna_v,
         )
 
     def forward(self, x_rna, x_atac, local_l_mean, local_l_var, batch_index=None, y=None):
@@ -408,7 +521,7 @@ class Multi_VAE(nn.Module):
         """
         # Parameters for z latent distribution
         x = [x_rna, x_atac]
-        outputs = self.inference(x, batch_index, y)
+        outputs = self.inference(x, batch_index, y, local_l_mean, local_l_var, update=False)
         qz_rna_m = outputs["qz_rna_m"]
         qz_rna_v = outputs["qz_rna_v"]
         qz_atac_m = outputs["qz_atac_m"]
@@ -425,6 +538,12 @@ class Multi_VAE(nn.Module):
         var_c = outputs["var_c"]
         gamma = outputs["gamma"]
         pi = outputs["pi"]
+        gamma_rna_rec = outputs["gamma_rna_rec"]
+        gamma_atac_rec = outputs["gamma_atac_rec"]
+        rec_atac_mu = outputs["rec_atac_mu"]
+        rec_atac_v = outputs["rec_atac_v"]
+        rec_rna_mu = outputs["rec_rna_mu"]
+        rec_rna_v = outputs["rec_rna_v"]
 
         """
            L elbo(x) = Eq(z,c|x)[ log p(x|z) ] - KL(q(z,c|x)||p(z,c))
@@ -433,6 +552,7 @@ class Multi_VAE(nn.Module):
         n_centroids = pi.size(1)
         mu_expand = qz_m.unsqueeze(2).expand(qz_m.size(0), qz_m.size(1), n_centroids)
         logvar_expand = qz_v.unsqueeze(2).expand(qz_v.size(0), qz_v.size(1), n_centroids)
+        # zl
 
         # log p(z|c)
         logpzc = -0.5 * torch.sum(gamma * torch.sum(math.log(2 * math.pi) + \
@@ -457,21 +577,49 @@ class Multi_VAE(nn.Module):
         )
 
         # kl(qz||qz_atac)
-        kld_qz_atac = kl(Normal(qz_m, torch.sqrt(qz_v)), Normal(qz_atac_m, torch.sqrt(qz_atac_v))).sum( #check the postive qz_v
+        kld_qz_atac = kl(Normal(qz_m, torch.sqrt(qz_v)), Normal(qz_atac_m, torch.sqrt(qz_atac_v))).sum(
+            # check the postive qz_v
             dim=1
         )
 
         # KL Divergence
         kl_divergence = kld_qz_pz + self.alfa * (kld_qz_rna + kld_qz_atac)
+        if self.isLibrary:
+            ql_m, ql_v, l_z = self.l_encoder(x_rna, y)
+            kl_divergence = kl_divergence + kl(
+                Normal(ql_m, torch.sqrt(ql_v)),
+                Normal(local_l_mean, torch.sqrt(local_l_var)),
+            ).sum(dim=1)
+            consistent_loss_rna = -(
+                        torch.softmax(gamma, dim=-1) * torch.log(torch.softmax(gamma_rna_rec, dim=-1) + 1.0e-6) + (
+                            1 - torch.softmax(gamma, dim=-1)) * torch.log(
+                    1 - torch.softmax(gamma_rna_rec, dim=-1) + 1.0e-6)).sum(dim=-1)
+            consistent_loss_atac = -(
+                        torch.softmax(gamma, dim=-1) * torch.log(torch.softmax(gamma_atac_rec, dim=-1) + 1.0e-6) + (
+                            1 - torch.softmax(gamma, dim=-1)) * torch.log(
+                    1 - torch.softmax(gamma_atac_rec, dim=-1) + 1.0e-6)).sum(dim=-1)
+            rec_rna_kl = kl(Normal(qz_m, torch.sqrt(qz_v)), Normal(rec_rna_mu, torch.sqrt(rec_rna_v))).sum(
+                dim=1
+            )
+            rec_atac_kl = kl(Normal(qz_m, torch.sqrt(qz_v)), Normal(rec_atac_mu, torch.sqrt(rec_atac_v))).sum(
+                dim=1
+            )
 
-        #likelihood
+        # likelihood
         reconst_loss_rna = self.get_reconstruction_loss(x[0], p_rna_rate, p_rna_r, p_rna_dropout)
-        reconst_loss_atac = self.get_reconstruction_atac_loss(x[1], p_atac_mean, p_atac_r, p_atac_dropout)  # implement this function
+        reconst_loss_atac = 0.25 * self.get_reconstruction_atac_loss(x[1], p_atac_mean, p_atac_r,
+                                                                     p_atac_dropout)  # implement this function
         reconst_loss = reconst_loss_rna + reconst_loss_atac
+        if self.isLibrary:
+            reconst_loss = reconst_loss + 0.5 * (consistent_loss_rna + consistent_loss_atac)
+            kl_divergence = kl_divergence + self.alfa * (rec_rna_kl + rec_atac_kl)
+
         # init the gmm model, training pc
         print("kld_qz_pz = %f,kld_qz_rna = %f,kld_qz_atac = %f,kl_divergence = %f,reconst_loss_rna = %f,\
-        reconst_loss_atac = %f" % (torch.mean(kld_qz_pz), torch.mean(kld_qz_rna), torch.mean(kld_qz_atac),\
-                                   torch.mean(kl_divergence), torch.mean(reconst_loss_rna), torch.mean(reconst_loss_atac)))
+        reconst_loss_atac = %f, mu=%f, sigma=%f" % (
+        torch.mean(kld_qz_pz), torch.mean(kld_qz_rna), torch.mean(kld_qz_atac), \
+        torch.mean(kl_divergence), torch.mean(reconst_loss_rna), torch.mean(reconst_loss_atac),
+        torch.mean(self.mu_c), torch.mean(self.var_c)))
         return reconst_loss, kl_divergence, 0.0
 
 
@@ -507,17 +655,17 @@ class LDVAE(Multi_VAE):
     """
 
     def __init__(
-        self,
-        n_input: int,
-        n_batch: int = 0,
-        n_labels: int = 0,
-        n_hidden: int = 128,
-        n_latent: int = 10,
-        n_layers: int = 1,
-        dropout_rate: float = 0.1,
-        dispersion: str = "gene",
-        log_variational: bool = True,
-        reconstruction_loss: str = "zinb",
+            self,
+            n_input: int,
+            n_batch: int = 0,
+            n_labels: int = 0,
+            n_hidden: int = 128,
+            n_latent: int = 10,
+            n_layers: int = 1,
+            dropout_rate: float = 0.1,
+            dispersion: str = "gene",
+            log_variational: bool = True,
+            reconstruction_loss: str = "zinb",
     ):
         super().__init__(
             n_input,

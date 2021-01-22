@@ -18,6 +18,7 @@ from scMVP.inference.posterior import Posterior
 logger = logging.getLogger(__name__)
 
 
+
 class Trainer:
     r"""The abstract Trainer class for training a PyTorch model and monitoring its statistics. It should be
     inherited at least with a .loss() function to be optimized in the training loop.
@@ -136,10 +137,11 @@ class Trainer:
         optimizer = self.optimizer = torch.optim.Adam(
             params, lr=lr, eps=eps, weight_decay=self.weight_decay
         )
+        aa = self.model.parameters()
 
         self.compute_metrics_time = 0
         self.n_epochs = n_epochs
-        self.compute_metrics()
+        flag = True
 
         with trange(
             n_epochs, desc="training", file=sys.stdout, disable=not self.show_progbar
@@ -154,6 +156,9 @@ class Trainer:
                         continue
                     loss = self.loss(*tensors_list)
                     print(loss)
+                    #if self.epoch == 15 and flag:
+                    #    flag = False
+                    #    optimizer.add_param_group({'params': self.model.get_params()})
                     optimizer.zero_grad()
                     loss.backward()
                     optimizer.step()
@@ -172,6 +177,8 @@ class Trainer:
                 "\nTraining time:  %i s. / %i epochs"
                 % (int(self.training_time), self.n_epochs)
             )
+        self.compute_metrics()
+
 
     def on_epoch_begin(self):
         pass
