@@ -423,7 +423,7 @@ class SciCarDemo(LoadData):
                     indata = [i.rstrip().split(",") for i in open(infile)][1:]
                     for line in indata:
                         fo.write("{}\n".format(line[0]))
-            cell_meta_data=pd.read_csv("{}/{}".format(data_path,"GSM3271040_ATAC_sciCAR_A549_cell.tsv"),
+            cell_meta_data=pd.read_csv("{}/{}".format(data_path,"GSM3271041_ATAC_sciCAR_A549_cell.txt"),
                                        sep=",",
                                        header=0, index_col=0
                                        )
