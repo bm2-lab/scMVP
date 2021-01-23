@@ -422,7 +422,7 @@ class SciCarDemo(LoadData):
                     infile = "{}/{}.txt".format(data_path, available_datasets[dataset_name][barcode_file][:-4])
                     indata = [i.rstrip().split(",") for i in open(infile)][1:]
                     for line in indata:
-                        fo.write("{}\n".format(line[0]))
+                        fo.write("{}\n".format("\t".join(line)))
 
             super().__init__(dataset=available_datasets[dataset_name],
                              data_path=data_path,
