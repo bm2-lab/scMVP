@@ -394,7 +394,7 @@ class PairedDemo(LoadData):
 
 
 class SciCarDemo(LoadData):
-    def __init__(self, dataset_name: str = None, data_path: str = "/dataset"):
+    def __init__(self, dataset_name: str = None, data_path: str = "/dataset", cell_meta: str = None):
         urls = "https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE117089&format=file"
         # NOTICE, tsv files are generated from original txt files
         available_datasets = {
@@ -423,10 +423,13 @@ class SciCarDemo(LoadData):
                     indata = [i.rstrip().split(",") for i in open(infile)][1:]
                     for line in indata:
                         fo.write("{}\n".format(line[0]))
-            cell_meta_data=pd.read_csv("{}/{}".format(data_path,"GSM3271041_ATAC_sciCAR_A549_cell.txt"),
+            if cell_meta:
+                cell_meta_data=pd.read_csv(cell_meta,
                                        sep=",",
                                        header=0, index_col=0
                                        )
+            else:
+                cell_meta_data = None
             super().__init__(dataset=available_datasets[dataset_name],
                              data_path=data_path,
                              dense=False,
