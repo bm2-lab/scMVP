@@ -422,12 +422,16 @@ class SciCarDemo(LoadData):
                     infile = "{}/{}.txt".format(data_path, available_datasets[dataset_name][barcode_file][:-4])
                     indata = [i.rstrip().split(",") for i in open(infile)][1:]
                     for line in indata:
-                        fo.write("{}\n".format("\t".join(line)))
-
+                        fo.write("{}\n".format(line[0]))
+            cell_meta_data=pd.read_csv("{}/{}".format(data_path,"GSM3271040_ATAC_sciCAR_A549_cell.tsv"),
+                                       sep=",",
+                                       header=0, index_col=0
+                                       )
             super().__init__(dataset=available_datasets[dataset_name],
                              data_path=data_path,
                              dense=False,
                              measurement_names_column=0,
+                             cell_meta=cell_meta_data,
                              remove_extracted_data=False,
                              delayed_populating=False,
                              gzipped=False,
