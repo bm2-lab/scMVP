@@ -424,10 +424,7 @@ class SciCarDemo(LoadData):
                     for line in indata:
                         fo.write("{}\n".format(line[0]))
             if cell_meta:
-                cell_meta_data=pd.read_csv(cell_meta,
-                                       sep=",",
-                                       header=0, index_col=0
-                                       )
+                cell_meta_data = pd.read_csv(cell_meta, sep=",", header=0)
             else:
                 cell_meta_data = None
             super().__init__(dataset=available_datasets[dataset_name],
