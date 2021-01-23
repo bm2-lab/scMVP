@@ -264,7 +264,7 @@ class LoadData(GeneExpressionDataset):
 
 class SnareDemo(LoadData):
 
-    def __init__(self, dataset_name: str=None, data_path: str="/dataset"):
+    def __init__(self, dataset_name: str=None, data_path: str="/dataset", cell_meta: str = None):
         url="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE126074"
         available_datasets = {
             "CellLineMixture": {
@@ -288,11 +288,16 @@ class SnareDemo(LoadData):
                 "atac_names": "GSE126074_P0_BrainCortex_SNAREseq_chromatin.peaks.tsv.gz",
             }
         }
+        if cell_meta:
+            cell_meta_data = pd.read_csv(cell_meta, sep=",", header=0)
+        else:
+            cell_meta_data = None
         if dataset_name=="CellLineMixture":
             super(SnareDemo, self).__init__(dataset = available_datasets[dataset_name],
                          data_path= data_path,
                          dense = False,
                          measurement_names_column = 1,
+                         cell_meta=cell_meta_data,
                          remove_extracted_data = False,
                          delayed_populating = False,
                          file_separator = "\t",
@@ -305,6 +310,7 @@ class SnareDemo(LoadData):
                              data_path=data_path,
                              dense=False,
                              measurement_names_column=1,
+                             cell_meta=cell_meta_data,
                              remove_extracted_data=False,
                              delayed_populating=False,
                              gzipped=True,
@@ -350,7 +356,6 @@ class PairedDemo(LoadData):
                 "atac_barcodes": "FB_DNA/barcodes.tsv"
             }
         }
-
         if dataset_name=="CellLineMixture" or dataset_name=="Fetal_Forebrain":
             if os.path.exists("{}/Cell_embeddings.xls".format(data_path)):
                 cell_embed = pd.read_csv("{}/Cell_embeddings.xls".format(data_path), sep='\t')
@@ -359,6 +364,7 @@ class PairedDemo(LoadData):
             else:
                 logger.info("Cannot find cell embedding files for Paried-seq Demo.")
                 return
+
             super().__init__(dataset = available_datasets[dataset_name],
                              data_path= data_path,
                              dense = False,
