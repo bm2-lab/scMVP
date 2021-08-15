@@ -6,16 +6,16 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.distributions import Normal, kl_divergence as kl
 
-from scMVP.models.log_likelihood import log_zinb_positive, log_nb_positive, mean_square_error, mean_square_error_positive
+from scMVP.models.log_likelihood import log_zinb_positive, log_nb_positive, mean_square_error, mean_square_error_positive, log_zip_positive
 from scMVP.models.modules import Encoder, DecoderSCVI, LinearDecoderSCVI, DecoderSCVI_nb, DecoderSCVI_mse, Encoder_l, Encoder_mse,\
-    Encoder_nb, DecoderSCVI_nb_rna
+    Encoder_nb, DecoderSCVI_nb_rna, DecoderSCVI_Peak
 from scMVP.models.utils import one_hot
 
 torch.backends.cudnn.benchmark = True
 
 
 # VAE model
-class VAE(nn.Module):
+class VAE_Peak(nn.Module):
     r"""Variational auto-encoder model.
 
     :param n_input: Number of input genes
@@ -138,7 +138,7 @@ class VAE(nn.Module):
                 n_hidden=n_hidden,
             )
         elif self.reconstruction_loss == "nb" and self.log_variational:
-            self.decoder = DecoderSCVI_nb(
+            self.decoder = DecoderSCVI_Peak(
                 n_latent,
                 n_input,
                 n_cat_list=[n_batch],
@@ -146,7 +146,7 @@ class VAE(nn.Module):
                 n_hidden=n_hidden,
             )
         elif self.reconstruction_loss == "nb" and not self.log_variational:
-            self.decoder = DecoderSCVI_nb_rna(
+            self.decoder = DecoderSCVI_Peak(
                 n_latent,
                 n_input,
                 n_cat_list=[n_batch],
@@ -242,8 +242,13 @@ class VAE(nn.Module):
             reconst_loss = -log_nb_positive(x, px_rate, px_r).sum(dim=-1)
         elif self.reconstruction_loss == "nb":
             #reconst_loss = -log_nb_positive(x, px_rate, px_r).sum(dim=-1)
-            reconst_loss = -log_nb_positive(x, px_rate, px_r).sum(dim=-1) + 0.5*mean_square_error_positive(x, px_rate).sum(dim=-1)
+            #reconst_loss = -log_nb_positive(x, px_rate, px_r).sum(dim=-1) + 0.5*mean_square_error_positive(x, px_rate).sum(dim=-1)
             #reconst_loss = -log_zinb_positive(x, px_rate, px_r, px_dropout).sum(dim=-1)
+            #reconst_loss = torch.nn.BCELoss(reduction="none")(px_rate, (x > 0).float()).sum(dim=-1) + 0.5*mean_square_error_positive(x, px_rate).sum(dim=-1)
+            reconst_loss = 0.5*mean_square_error_positive(x, px_rate).sum(dim=-1) - log_zip_positive(x, px_rate, px_dropout).sum(dim=-1)
+            px_rate[x > 0] = 0
+            reconst_loss = reconst_loss + 0.05*px_rate.sum(dim=-1)
+
         elif self.reconstruction_loss == "mse":
             reconst_loss = mean_square_error_positive(x, px_rate).sum(dim=-1)
         return reconst_loss
@@ -262,7 +267,7 @@ class VAE(nn.Module):
         x_ = x
         if self.reconstruction_loss == "nb" and self.log_variational:
             library_nb = torch.log(x_.sum(dim=-1)).reshape(-1, 1)
-        elif self.reconstruction_loss == "nb" and not self.log_variational:
+        elif self.reconstruction_loss == "nb" and (not self.log_variational):
             library_nb = (x_.sum(dim=-1)).reshape(-1, 1)
         if self.log_variational:
             x_ = torch.log(1 + x_)
@@ -368,7 +373,7 @@ class VAE(nn.Module):
         return reconst_loss + kl_divergence_l, kl_divergence, 0.0
 
 
-class LDVAE(VAE):
+class LDVAE(VAE_Peak):
     r"""Linear-decoded Variational auto-encoder model.
 
     This model uses a linear decoder, directly mapping the latent representation

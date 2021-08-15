@@ -1,5 +1,6 @@
 import torch
-
+import scipy.io as sp_io
+import numpy as np
 
 def iterate(obj, func):
     t = type(obj)
@@ -44,3 +45,7 @@ def enumerate_discrete(x, y_dim):
 
     batch_size = x.size(0)
     return torch.cat([batch(batch_size, i) for i in range(y_dim)])
+
+
+def binarization(imputed, raw):
+    return (imputed.T > np.quantile(imputed,q=0.8,axis=1).T).T & (imputed>imputed.mean(0)) & (imputed>0).astype(np.int8)

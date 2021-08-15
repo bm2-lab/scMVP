@@ -18,6 +18,9 @@ from sklearn.utils.linear_assignment_ import linear_assignment
 logger = logging.getLogger(__name__)
 
 
+
+
+
 class MultiPosterior(Posterior):
     r"""The functional data unit for Multivae. A `MultiPosterior` instance is instantiated with a model and
     a gene_dataset, and as well as additional arguments that for Pytorch's `DataLoader`. A subset of indices
@@ -33,6 +36,15 @@ class MultiPosterior(Posterior):
     :param use_cuda: Default: ``True``
     :param data_loader_kwarg: Keyword arguments to passed into the `DataLoader`
 
+    Examples:
+
+    Let us instantiate a `trainer`, with a gene_dataset and a model
+
+        >>> gene_dataset = CbmcDataset()
+        >>> totalvi = TOTALVI(gene_dataset.nb_genes, len(gene_dataset.protein_names),
+        ... n_batch=gene_dataset.n_batches * False, n_labels=gene_dataset.n_labels, use_cuda=True)
+        >>> trainer = TotalTrainer(vae, gene_dataset)
+        >>> trainer.train(n_epochs=400)
     """
 
     def __init__(
@@ -525,6 +537,7 @@ class MultiTrainer(UnsupervisedTrainer):
             "reconst_loss = %f,kl_divergence_local = %f,kl_weight = %f,loss = %f" %
               (torch.mean(reconst_loss), torch.mean(kl_divergence_local), self.back_warmup_weight, loss)
               )
+        # self.KL_divergence = kl_divergence_global
         if self.normalize_loss:
             loss = loss / self.n_samples
         return loss
@@ -561,3 +574,4 @@ class MultiTrainer(UnsupervisedTrainer):
             self.back_warmup_weight = min(1, self.epoch + self.n_epochs_back_kl_warmup / self.n_epochs_back_kl_warmup)
         else:
             self.back_warmup_weight = 1.0
+

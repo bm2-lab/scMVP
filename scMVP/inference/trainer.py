@@ -18,7 +18,6 @@ from scMVP.inference.posterior import Posterior
 logger = logging.getLogger(__name__)
 
 
-
 class Trainer:
     r"""The abstract Trainer class for training a PyTorch model and monitoring its statistics. It should be
     inherited at least with a .loss() function to be optimized in the training loop.
@@ -66,13 +65,16 @@ class Trainer:
         self._posteriors = OrderedDict()
         self.seed = seed
 
-        self.data_loader_kwargs = {"batch_size": 256, "pin_memory": use_cuda} # 128 for batchsize in init
+        #self.data_loader_kwargs = {"batch_size": 256, "pin_memory": use_cuda} # 128 for batchsize in init
+        self.data_loader_kwargs = {"batch_size": 64, "pin_memory": use_cuda} # 128 for batchsize in init
         self.data_loader_kwargs.update(data_loader_kwargs)
 
         self.weight_decay = weight_decay
         self.benchmark = benchmark
         self.epoch = -1  # epoch = self.epoch + 1 in compute metrics
         self.training_time = 0
+        # self.KL_divergence = -1
+        # self.KL_divergence_max = 10000
 
         if metrics_to_monitor is not None:
             self.metrics_to_monitor = set(metrics_to_monitor)
@@ -156,6 +158,8 @@ class Trainer:
                         continue
                     loss = self.loss(*tensors_list)
                     print(loss)
+                    # if self.KL_divergence > self.KL_divergence_max:
+                    #     break
                     #if self.epoch == 15 and flag:
                     #    flag = False
                     #    optimizer.add_param_group({'params': self.model.get_params()})
@@ -205,6 +209,8 @@ class Trainer:
                 for param_group in self.optimizer.param_groups:
                     param_group["lr"] *= self.early_stopping.lr_factor
 
+        # if self.KL_divergence > self.KL_divergence_max:
+        #     continue_training = False
         return continue_training
 
     @property

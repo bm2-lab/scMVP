@@ -76,20 +76,20 @@ class LoadData(GeneExpressionDataset):
             # for _key in self.dataset.keys():
             if self.gzip:
                 _tmp = pd.read_csv("{}/{}".format(self.data_path,self.dataset["gene_expression"]), sep=self.file_separator,
-                    header=0, index_col=0)
+                    header=0, index_col=0, compression="gzip")
             else:
                 _tmp = pd.read_csv("{}/{}".format(self.data_path,self.dataset["gene_expression"]), sep=self.file_separator,
-                                                   header=0, index_col=0, compression="gzip")
+                                                   header=0)
             joint_profiles["gene_barcodes"] = pd.DataFrame(_tmp.columns.values)
             joint_profiles["gene_names"] = pd.DataFrame(_tmp._stat_axis.values)
             joint_profiles["gene_expression"] = np.array(_tmp).T
 
             if self.gzip:
                 _tmp = pd.read_csv("{}/{}".format(self.data_path,self.dataset["atac_expression"]), sep=self.file_separator,
-                    header=0, index_col=0)
+                    header=0, index_col=0, compression="gzip")
             else:
                 _tmp = pd.read_csv("{}/{}".format(self.data_path,self.dataset["atac_expression"]), sep=self.file_separator,
-                                                   header=0, index_col=0, compression="gzip")
+                                                   header=0, index_col=0)
             joint_profiles["atac_barcodes"] = pd.DataFrame(_tmp.columns.values)
             joint_profiles["atac_names"] = pd.DataFrame(_tmp._stat_axis.values)
             joint_profiles["atac_expression"] = np.array(_tmp).T

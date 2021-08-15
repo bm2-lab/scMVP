@@ -8,14 +8,14 @@ from torch.distributions import Normal, kl_divergence as kl
 
 from scMVP.models.log_likelihood import log_zinb_positive, log_nb_positive, mean_square_error, mean_square_error_positive
 from scMVP.models.modules import Encoder, DecoderSCVI, LinearDecoderSCVI, DecoderSCVI_nb, DecoderSCVI_mse, Encoder_l, Encoder_mse,\
-    Encoder_nb, DecoderSCVI_nb_rna
+    Encoder_nb, DecoderSCVI_nb_rna, Encoder_nb_attention, DecoderSCVI_nb_Selfattention, Encoder_nb_selfattention
 from scMVP.models.utils import one_hot
 
 torch.backends.cudnn.benchmark = True
 
 
 # VAE model
-class VAE(nn.Module):
+class VAE_Attention(nn.Module):
     r"""Variational auto-encoder model.
 
     :param n_input: Number of input genes
@@ -96,13 +96,14 @@ class VAE(nn.Module):
                 dropout_rate=dropout_rate,
             )
         elif self.reconstruction_loss == "nb":
-            self.z_encoder = Encoder_nb(
+            self.z_encoder = Encoder_nb_attention(
                 n_input,
                 n_latent,
                 n_layers=n_layers,
                 n_hidden=n_hidden,
                 dropout_rate=dropout_rate,
             )
+
         else:
             self.z_encoder = Encoder(
                 n_input,
@@ -237,13 +238,19 @@ class VAE(nn.Module):
 
     def get_reconstruction_loss(self, x, px_rate, px_r, px_dropout, **kwargs):
         # Reconstruction Loss
-        if self.reconstruction_loss == "zinb":
-            #reconst_loss = -log_zinb_positive(x, px_rate, px_r, px_dropout).sum(dim=-1)
-            reconst_loss = -log_nb_positive(x, px_rate, px_r).sum(dim=-1)
-        elif self.reconstruction_loss == "nb":
-            #reconst_loss = -log_nb_positive(x, px_rate, px_r).sum(dim=-1)
+        # if self.reconstruction_loss == "zinb":
+            # reconst_loss = -log_zinb_positive(x, px_rate, px_r, px_dropout).sum(dim=-1)
+        # elif self.reconstruction_loss == "zinb_mix":
+        if self.reconstruction_loss == "nb":
             reconst_loss = -log_nb_positive(x, px_rate, px_r).sum(dim=-1) + 0.5*mean_square_error_positive(x, px_rate).sum(dim=-1)
-            #reconst_loss = -log_zinb_positive(x, px_rate, px_r, px_dropout).sum(dim=-1)
+            # reconst_loss = -log_zinb_positive(x, px_rate, px_r, px_dropout).sum(dim=-1) + 0.5*mean_square_error_positive(x, px_rate).sum(dim=-1)
+            # px_rate[x > 0] = 0
+            # reconst_loss = reconst_loss + 0.05 * px_rate.sum(dim=-1)
+        # elif self.reconstruction_loss == "nb":
+        #     reconst_loss = -log_nb_positive(x, px_rate, px_r).sum(dim=-1)
+        # elif self.reconstruction_loss == "nb_mix":
+        elif self.reconstruction_loss == "zinb":
+            reconst_loss = -log_nb_positive(x, px_rate, px_r).sum(dim=-1) + 0.5*mean_square_error_positive(x, px_rate).sum(dim=-1)
         elif self.reconstruction_loss == "mse":
             reconst_loss = mean_square_error_positive(x, px_rate).sum(dim=-1)
         return reconst_loss
@@ -368,7 +375,7 @@ class VAE(nn.Module):
         return reconst_loss + kl_divergence_l, kl_divergence, 0.0
 
 
-class LDVAE(VAE):
+class LDVAE(VAE_Attention):
     r"""Linear-decoded Variational auto-encoder model.
 
     This model uses a linear decoder, directly mapping the latent representation

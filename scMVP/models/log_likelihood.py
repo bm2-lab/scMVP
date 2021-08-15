@@ -205,6 +205,16 @@ def binary_cross_entropy(x, recon_x, eps=1e-8):
 #    print(torch.mean(recon_x))
     return res
 
+def mean_square_error(x,recon_x):
+    res = (x - recon_x)*(x - recon_x)
+    return res
+def mean_square_error_positive(x,recon_x):
+    #res = (x - recon_x + 1)*(x - recon_x + 1)
+    #res[x==0] = 0
+    res = torch.abs((x - recon_x))
+    res[x == 0] = 0 # test this property
+    return res
+
 def log_zip_positive(x, mu, pi, eps=1e-8):
     # the likelihood of zero probability p(x=0) = -softplus(-pi)+softplus(-pi-mu)
     softplus_pi = F.softplus(-pi)
@@ -301,6 +311,8 @@ def log_mixture_nb(x, mu_1, mu_2, theta_1, theta_2, pi, eps=1e-8):
     Note: All inputs should be torch Tensors
     log likelihood (scalar) of a minibatch according to a mixture nb model.
     pi is the probability to be in the first component.
+
+    For totalVI, the first component should be background.
 
     Variables:
     mu1: mean of the first negative binomial component (has to be positive support) (shape: minibatch x genes)

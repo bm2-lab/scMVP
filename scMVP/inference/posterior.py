@@ -150,7 +150,7 @@ class Posterior:
         return posterior
 
     #def sequential(self, batch_size=128):
-    def sequential(self, batch_size=256):
+    def sequential(self, batch_size=64):
         return self.update(
             {
                 "batch_size": batch_size,
@@ -637,7 +637,7 @@ class Posterior:
         self,
         n_samples: int = 100,
         genes: Union[list, np.ndarray] = None,
-        batch_size: int = 256,
+        batch_size: int = 64,
         #batch_size: int = 128,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         """
@@ -725,7 +725,7 @@ class Posterior:
     def get_stats(self):
         libraries = []
         #for tensors in self.sequential(batch_size=128):
-        for tensors in self.sequential(batch_size=256):
+        for tensors in self.sequential(batch_size=64):
             x, local_l_mean, local_l_var, batch_index, y = tensors
             library = self.model.inference(x, batch_index, y)["library"]
             libraries += [np.array(library.cpu())]
