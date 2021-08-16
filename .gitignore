@@ -2,11 +2,7 @@
 .idea/
 venv/
 data/
-*.pkl
-*.csv
-*.tsv
-*.mtx
-*.xls
+
 demos/dataset/*.txt
 demos/dataset/*/*.txt
 *.bed
@@ -16,8 +12,6 @@ docs/
 *.gz
 nohup.out
 
-demos/
-demos/
 demos/.ipynb_checkpoints/
 spatstat_1.64-1.tar.gz
 demos/snare_p0_old_model.ipynb
