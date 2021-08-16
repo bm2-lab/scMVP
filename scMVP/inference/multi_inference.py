@@ -295,17 +295,17 @@ class MultiPosterior(Posterior):
                 [sample_batch_rna, sample_batch_atac], y=label, give_mean=give_mean
             )
             latent += [
-                latent_temp[0][0]
+                latent_temp[0][0].cpu()
             ]
             latent_rna += [
-                latent_temp[1][0]
+                latent_temp[1][0].cpu()
             ]
             latent_atac += [
-                latent_temp[2][0]
+                latent_temp[2][0].cpu()
             ]
             gamma, mu_c, var_c, pi = self.model.get_gamma(latent_temp[0][0])
-            cluster_gamma += [gamma]
-            cluster_index += [torch.argmax(gamma,dim=1)]
+            cluster_gamma += [gamma.cpu()]
+            cluster_index += [torch.argmax(gamma.cpu(),dim=1)]
             batch_indices += [batch_index.cpu()]
             labels += [label.cpu()]
         return (
