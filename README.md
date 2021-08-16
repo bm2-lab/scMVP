@@ -9,7 +9,7 @@ scMVP requires Python3.7.x and [**Pytorch**](http://pytorch.org).<br>
 For example, use [**miniconda**](https://conda.io/miniconda.html) to install python and pytorch of CPU or GPU version.
 ```Bash
 conda install -c pytorch python=3.7 pytorch
-# if you do not have jupyter notebook/ipython notebook, you can also install by conda
+# if you do not have jupyter notebook/ipython notebook, you can also install it by conda
 conda install jupyter
 ```
 
@@ -48,10 +48,8 @@ Your should first prepare your input files, example is as follows:
 - dataset.SnareDemo(): SNARE-seq paper dataset.<br>
 
 ### pretrained models:<br>
-Download link: [baidu cloud disk](https://pan.baidu.com/s/1Lk_BRyHq8Re_zpXWBMkLqA)<br>
-Download code: ki9q<br>
-- GMM.pkl pre-train GMM model before multi-VAE model <br>
-- multi_vae.pkl multi-VAE model for scMVP <br>
+Download link: [baidu cloud disk](https://pan.baidu.com/s/1_CR1b-GEVM1xeys9ks5Ocw)<br>
+Download code: lg5v<br>
 
 ## User tutorial
 
