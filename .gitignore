@@ -27,7 +27,6 @@ demos/snare_cellline/
 demos/sciCAR_cellline/
 demos/snare_p0/
 demos/paired_adult.ipynb
-scMVP_tutorial.ipynb
 dataset/
 
 # Byte-compiled / optimized / DLL files
