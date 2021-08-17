@@ -16,8 +16,6 @@ docs/
 *.gz
 nohup.out
 
-demos/
-demos/
 demos/.ipynb_checkpoints/
 spatstat_1.64-1.tar.gz
 demos/snare_p0_old_model.ipynb
@@ -33,7 +31,6 @@ demos/snare_cellline/
 demos/sciCAR_cellline/
 demos/snare_p0/
 demos/paired_adult.ipynb
-scMVP_tutorial.ipynb
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
