@@ -65,18 +65,12 @@ class FCLayers(nn.Module):
                             # the tensorflow implementation of batch norm; we're using those settings
                             # here too so that the results match our old tensorflow code. The default
                             # setting from pytorch would probably be fine too but we haven't tested that.
-                            #nn.BatchNorm1d(n_out, momentum=0.01, eps=0.001)
                             nn.LayerNorm(n_out, eps=0.0001),
-                            #if use_batch_norm
-                            #else nn.BatchNorm1d(n_out, momentum=0.01, eps=0.001),
-                            #nn.ReLU() if use_relu else None,
                             nn.LeakyReLU() if RNA_mode else None,
                             nn.BatchNorm1d(n_out, momentum=0.01, eps=0.0001)
                             if use_batch_norm
                             else None,
-                            #nn.LeakyReLU() if use_batch_norm else None,
                             nn.LeakyReLU() if use_relu else nn.ReLU(),
-                            #nn.Tanh(),
                             nn.Dropout(p=dropout_rate) if dropout_rate > 0 else None,
                         ),
                     )
@@ -486,20 +480,6 @@ class Encoder_nb_selfattention_layer(nn.Module):
         self.w_q1 = nn.Linear(8*n_hidden, 8*n_hidden)
         self.w_k1 = nn.Linear(8*n_hidden, 8*n_hidden)
         self.w_v1 = nn.Linear(8*n_hidden, 8*n_hidden)
-        '''
-        self.encoder2 = FCLayers(
-            n_in=24 * n_hidden,
-            n_out=4 * n_hidden,
-            n_cat_list=n_cat_list,
-            n_layers=n_layers,
-            n_hidden=4 * n_hidden,
-            dropout_rate=dropout_rate,
-            RNA_mode=False,
-        )
-        self.w_q2 = nn.Linear(4 * n_hidden, 4 * n_hidden)
-        self.w_k2 = nn.Linear(4 * n_hidden, 4 * n_hidden)
-        self.w_v2 = nn.Linear(4 * n_hidden, 4 * n_hidden)
-        '''
         self.encoder3 = FCLayers(
             n_in=8 * n_hidden,
             n_out=n_hidden,
@@ -539,15 +519,6 @@ class Encoder_nb_selfattention_layer(nn.Module):
         energy = torch.matmul(Q, K.permute(0, 1, 3, 2))
         attention = self.do(torch.softmax(energy, dim=-1))
         q = torch.matmul(attention, V).view(q.shape[0], q.shape[1])
-        '''
-        q = self.encoder2(q, *cat_list)
-        Q = self.w_q2(q).view(q.shape[0], self.n_heads, q.shape[1] // self.n_heads, -1)
-        K = self.w_k2(q).view(q.shape[0], self.n_heads, q.shape[1] // self.n_heads, -1)
-        V = self.w_v2(q).view(q.shape[0], self.n_heads, q.shape[1] // self.n_heads, -1)
-        energy = torch.matmul(Q, K.permute(0, 1, 3, 2))
-        attention = self.do(torch.softmax(energy, dim=-1))
-        q = torch.matmul(attention, V).view(q.shape[0], q.shape[1])
-        '''
         q = self.encoder3(q, *cat_list)
         Q = self.w_q3(q).view(q.shape[0], self.n_heads, q.shape[1] // self.n_heads, -1)
         K = self.w_k3(q).view(q.shape[0], self.n_heads, q.shape[1] // self.n_heads, -1)
@@ -631,9 +602,7 @@ class Encoder_nb_selfattention(nn.Module):
         V = self.w_v(q).view(q.shape[0],self.n_heads, q.shape[1]//self.n_heads,-1)
         energy = torch.matmul(Q, K.permute(0, 1, 3, 2))
         attention = self.do(torch.softmax(energy, dim=-1))
-        #q_a = torch.matmul(attention, V).view(q.shape[0],q.shape[1])*self.px_encoder_aux(x)
         q_a = torch.matmul(attention, V).view(q.shape[0], q.shape[1])
-        # q_a = self.layernorm(q_a)
 
         q_m = self.mean_encoder(q_a)
         q_v = torch.exp(self.var_encoder(q_a)) + 1e-4
@@ -725,10 +694,6 @@ class Encoder_mse(nn.Module):
     ):
         super().__init__()
 
-        #self.encoder = nn.Sequential(
-        #    nn.Linear(n_input,n_hidden),
-        #    nn.LeakyReLU(),
-        #)
         self.encoder = nn.Linear(n_input,n_hidden)
         self.mean_encoder = nn.Linear(n_hidden, n_output)
         self.var_encoder = nn.Linear(n_hidden, n_output)
@@ -845,7 +810,6 @@ class Multi_Encoder_nb_attention(nn.Module):
             nn.Linear(ATAC_input, n_hidden), nn.Linear(n_hidden, n_hidden), nn.Sigmoid()
         )
         self.concat = nn.Linear(2 * n_hidden, n_hidden)
-        #self.concat2 = nn.Linear(n_hidden, n_hidden)
         self.mean_encoder = nn.Linear(n_hidden, n_output)
         self.var_encoder = nn.Linear(n_hidden, n_output)
 
@@ -912,7 +876,6 @@ class Multi_Encoder_nb_SelfAttention(nn.Module):
         self.layernorm = nn.LayerNorm(n_hidden, eps=0.0001)
 
         self.concat = nn.Linear(2 * n_hidden, n_hidden)
-        #self.concat2 = nn.Linear(n_hidden, n_hidden)
         self.mean_encoder = nn.Linear(n_hidden, n_output)
         self.var_encoder = nn.Linear(n_hidden, n_output)
 
@@ -933,7 +896,6 @@ class Multi_Encoder_nb_SelfAttention(nn.Module):
         K = self.w_k(q2).view(q2.shape[0], self.n_heads, q2.shape[1] // self.n_heads, -1)
         V = self.w_v(q2).view(q2.shape[0], self.n_heads, q2.shape[1] // self.n_heads, -1)
         energy = torch.matmul(Q, K.permute(0, 1, 3, 2))
-        # print("Encoder energy:{}".format(torch.max(energy)))
         attention = self.do(torch.softmax(energy, dim=-1))
         q2 = torch.matmul(attention, V).view(q2.shape[0], q2.shape[1])
 
@@ -1024,31 +986,13 @@ class Multi_Decoder_nb_log(nn.Module):
         )
         # mean gamma
         if is_cluster:
-            #self.rna_scale_decoder = nn.Sequential(
-            #    nn.Linear(n_hidden + n_cluster, RNA_output), nn.Softmax(dim=-1)
-            #)
-            # test version
-            #self.rna_scale_decoder = nn.Sequential(
-            #    nn.Linear(n_hidden + n_hidden, 4*n_hidden), nn.Linear(4*n_hidden, RNA_output), nn.Softmax(dim=-1)
-            #)
-            # release version 210228
             self.rna_scale_decoder = nn.Sequential(
                 nn.Linear(n_hidden, 2* n_hidden), nn.Linear(2* n_hidden, RNA_output), nn.Softmax(dim=-1)
             )
-            # release version 210317
-            #self.rna_scale_decoder = nn.Sequential(
-            #    nn.Linear(n_hidden, 2 * n_hidden), nn.Linear(2 * n_hidden, RNA_output), nn.Sigmoid()
-            #)
-            #self.rna_scale_decoder = nn.Sequential(
-            #    nn.Linear(n_hidden, RNA_output), nn.Softmax(dim=-1)
-            #)
         else:
             self.rna_scale_decoder = nn.Sequential(
                 nn.Linear(n_hidden, RNA_output), nn.Softmax(dim=-1)
             )
-        #self.rna_scale_decoder = nn.Sequential(
-        #    nn.Linear(n_hidden, RNA_output), nn.Sigmoid()
-        #)
         # dispersion: here we only deal with gene-cell dispersion case
         self.rna_r_decoder = nn.Linear(n_hidden, RNA_output)
         # dropout
@@ -1067,10 +1011,6 @@ class Multi_Decoder_nb_log(nn.Module):
             dropout_rate=0,
             RNA_mode=False,
         )
-        # mean possion
-        #self.atac_scale_decoder = nn.Sequential(
-        #    nn.Linear(n_hidden, ATAC_output), nn.Sigmoid()
-        #)
         if is_cluster:
             self.cluster_decoder = FCLayers(
                 n_in=n_cluster,
@@ -1080,13 +1020,6 @@ class Multi_Decoder_nb_log(nn.Module):
                 n_hidden=n_hidden,
                 dropout_rate=0,
             )
-            #self.atac_scale_decoder = nn.Sequential(
-            #    nn.Linear( n_hidden + n_cluster, n_hidden * 4), nn.Linear(n_hidden * 4, ATAC_output)
-            #)
-        #else:
-        #self.atac_scale_decoder = nn.Sequential(
-        #    nn.Linear(2*n_hidden, n_hidden*4), nn.Linear(n_hidden*4, ATAC_output)
-        #)
         self.atac_scale_decoder = nn.Sequential(
             nn.Linear( n_hidden, n_hidden * 4), nn.Linear(n_hidden * 4, ATAC_output)
         )
@@ -1121,65 +1054,38 @@ class Multi_Decoder_nb_log(nn.Module):
         libaray_temp = self.libaray_decoder(z_c, *cat_list)
         libaray_gene = self.libaray_rna_scale_decoder(libaray_temp)
 
-        #print(gamma)
         if gamma is not None:
             cluster_temp = (self.cluster_decoder(gamma, *cat_list))
-            #p_rna_scale = self.rna_scale_decoder(torch.cat([p_rna, cluster_temp], dim=-1))
-            #test version 210302
             p_rna_scale = self.rna_scale_decoder(torch.mul(p_rna, torch.sigmoid(cluster_temp)))
-            #release version 210228
-            #p_rna_scale = self.rna_scale_decoder(torch.mul(p_rna, torch.softmax(cluster_temp,dim=-1)))
         else:
             p_rna_scale = self.rna_scale_decoder(p_rna)
 
-
-        #p_rna_dropout = self.rna_dropout_decoder(p_rna)
         p_rna_dropout = self.rna_dropout_decoder(torch.mul(p_rna, torch.sigmoid(cluster_temp)))
 
-
-
-        #p_rna_rate = torch.exp(libaray_gene.clamp(max=8)) * p_rna_scale  # torch.clamp( , max=12)
         if libary_scale is not None:
             p_rna_rate = torch.exp(libary_scale) * p_rna_scale * self.px_rna_decoder_aux(z)# libary_scale
-            #p_rna_rate = torch.exp(libaray_gene) * p_rna_scale  # torch.clamp( , max=12)
         else:
             p_rna_rate = torch.exp(libaray_gene) * p_rna_scale * self.px_rna_decoder_aux(z)  # torch.clamp( , max=12)
 
         p_rna_rate.clamp(max=12) # maybe it is unnecessary
-        #p_rna_r = self.rna_r_decoder(p_rna)
         p_rna_r = self.rna_r_decoder(torch.mul(p_rna, torch.sigmoid(cluster_temp)))
 
-        # The decoder returns values for the parameters of the ZIP distribution of scATAC-seq
         p_atac = self.scATAC_decoder(z, *cat_list)
-        #p_atac = self.scRNA_decoder(z, *cat_list)
-        #p_atac_scale = self.atac_scale_decoder(p_atac)
         if gamma is not None:
-            #p_atac_scale = self.atac_scale_decoder(torch.cat([p_atac, cluster_temp], dim=-1))
-            # released version 210228
-            #p_atac_scale = self.atac_scale_decoder(torch.mul(p_atac, torch.softmax(cluster_temp,dim=-1)))
-            # test version 210302
             p_atac_scale = self.atac_scale_decoder(torch.mul(p_atac, torch.sigmoid(cluster_temp)))
 
         else:
             p_atac_scale = self.atac_scale_decoder(torch.cat([p_atac, torch.softmax(libaray_temp, dim=-1)], dim=-1))
 
-        #p_atac_r = self.atac_r_decoder(p_atac)
         p_atac_r = self.atac_r_decoder(torch.mul(p_atac, torch.sigmoid(cluster_temp)))
 
-        #p_atac_dropout = self.atac_dropout_decoder(p_atac)
         p_atac_dropout = self.atac_dropout_decoder(torch.mul(p_atac, torch.sigmoid(cluster_temp)))
 
 
         libaray_atac = self.libaray_atac_scale_decoder(libaray_temp)
-        #p_atac_mean = torch.exp(libaray_atac.clamp(max=9)) * p_atac_scale # for zinp and zip loss
-        #p_atac_mean = torch.sigmoid(torch.exp(libaray_atac) * p_atac_scale)# for zinp and zip loss
-        #p_atac_mean = torch.sigmoid(p_atac_scale)# for zinp and zip loss
         p_atac_mean = torch.softmax(p_atac_scale,dim=-1)*self.px_atac_decoder_aux(z)# for zinp and zip loss
-        #p_atac_mean = torch.clamp(torch.exp(libaray_atac) * p_atac_scale, max=1)# for zinp and zip loss
         if libary_atac is not None:
-            #p_atac_mean = libary_atac*p_atac_mean
             p_atac_mean = torch.exp(libary_atac) * p_atac_mean
-        #p_atac_mean = libaray_atac * p_atac_scale # for binary loss
 
         return p_rna_scale, p_rna_r, p_rna_rate, p_rna_dropout, p_atac_scale, p_atac_r, p_atac_mean, p_atac_dropout
 
@@ -1211,31 +1117,13 @@ class Multi_Decoder_nb_log_peak(nn.Module):
         )
         # mean gamma
         if is_cluster:
-            #self.rna_scale_decoder = nn.Sequential(
-            #    nn.Linear(n_hidden + n_cluster, RNA_output), nn.Softmax(dim=-1)
-            #)
-            # test version
-            #self.rna_scale_decoder = nn.Sequential(
-            #    nn.Linear(n_hidden + n_hidden, 4*n_hidden), nn.Linear(4*n_hidden, RNA_output), nn.Softmax(dim=-1)
-            #)
-            # release version 210228
             self.rna_scale_decoder = nn.Sequential(
                 nn.Linear(n_hidden, 2* n_hidden), nn.Linear(2* n_hidden, RNA_output), nn.Softmax(dim=-1)
             )
-            # release version 210317
-            #self.rna_scale_decoder = nn.Sequential(
-            #    nn.Linear(n_hidden, 2 * n_hidden), nn.Linear(2 * n_hidden, RNA_output), nn.Sigmoid()
-            #)
-            #self.rna_scale_decoder = nn.Sequential(
-            #    nn.Linear(n_hidden, RNA_output), nn.Softmax(dim=-1)
-            #)
         else:
             self.rna_scale_decoder = nn.Sequential(
                 nn.Linear(n_hidden, RNA_output), nn.Softmax(dim=-1)
             )
-        #self.rna_scale_decoder = nn.Sequential(
-        #    nn.Linear(n_hidden, RNA_output), nn.Sigmoid()
-        #)
         # dispersion: here we only deal with gene-cell dispersion case
         self.rna_r_decoder = nn.Linear(n_hidden, RNA_output)
         # dropout
@@ -1255,9 +1143,6 @@ class Multi_Decoder_nb_log_peak(nn.Module):
             RNA_mode=False,
         )
         # mean possion
-        #self.atac_scale_decoder = nn.Sequential(
-        #    nn.Linear(n_hidden, ATAC_output), nn.Sigmoid()
-        #)
         if is_cluster:
             self.cluster_decoder = FCLayers(
                 n_in=n_cluster,
@@ -1267,13 +1152,6 @@ class Multi_Decoder_nb_log_peak(nn.Module):
                 n_hidden=n_hidden,
                 dropout_rate=0,
             )
-            #self.atac_scale_decoder = nn.Sequential(
-            #    nn.Linear( n_hidden + n_cluster, n_hidden * 4), nn.Linear(n_hidden * 4, ATAC_output)
-            #)
-        #else:
-        #self.atac_scale_decoder = nn.Sequential(
-        #    nn.Linear(2*n_hidden, n_hidden*4), nn.Linear(n_hidden*4, ATAC_output)
-        #)
         self.atac_scale_decoder = nn.Sequential(
             nn.Linear( n_hidden, n_hidden * 4), nn.Linear(n_hidden * 4, ATAC_output), nn.Sigmoid()
         )
@@ -1308,65 +1186,39 @@ class Multi_Decoder_nb_log_peak(nn.Module):
         libaray_temp = self.libaray_decoder(z_c, *cat_list)
         libaray_gene = self.libaray_rna_scale_decoder(libaray_temp)
 
-        #print(gamma)
         if gamma is not None:
             cluster_temp = (self.cluster_decoder(gamma, *cat_list))
-            #p_rna_scale = self.rna_scale_decoder(torch.cat([p_rna, cluster_temp], dim=-1))
-            #test version 210302
             p_rna_scale = self.rna_scale_decoder(torch.mul(p_rna, torch.sigmoid(cluster_temp)))
-            #release version 210228
-            #p_rna_scale = self.rna_scale_decoder(torch.mul(p_rna, torch.softmax(cluster_temp,dim=-1)))
         else:
             p_rna_scale = self.rna_scale_decoder(p_rna)
 
 
-        #p_rna_dropout = self.rna_dropout_decoder(p_rna)
         p_rna_dropout = self.rna_dropout_decoder(torch.mul(p_rna, torch.sigmoid(cluster_temp)))
 
-
-
-        #p_rna_rate = torch.exp(libaray_gene.clamp(max=8)) * p_rna_scale  # torch.clamp( , max=12)
         if libary_scale is not None:
             p_rna_rate = torch.exp(libary_scale) * p_rna_scale * self.px_rna_decoder_aux(z)# libary_scale
-            #p_rna_rate = torch.exp(libaray_gene) * p_rna_scale  # torch.clamp( , max=12)
         else:
             p_rna_rate = torch.exp(libaray_gene) * p_rna_scale * self.px_rna_decoder_aux(z)  # torch.clamp( , max=12)
 
         p_rna_rate.clamp(max=12) # maybe it is unnecessary
-        #p_rna_r = self.rna_r_decoder(p_rna)
         p_rna_r = self.rna_r_decoder(torch.mul(p_rna, torch.sigmoid(cluster_temp)))
 
-        # The decoder returns values for the parameters of the ZIP distribution of scATAC-seq
         p_atac = self.scATAC_decoder(z, *cat_list)
-        #p_atac = self.scRNA_decoder(z, *cat_list)
-        #p_atac_scale = self.atac_scale_decoder(p_atac)
         if gamma is not None:
-            #p_atac_scale = self.atac_scale_decoder(torch.cat([p_atac, cluster_temp], dim=-1))
-            # released version 210228
-            #p_atac_scale = self.atac_scale_decoder(torch.mul(p_atac, torch.softmax(cluster_temp,dim=-1)))
-            # test version 210302
             p_atac_scale = self.atac_scale_decoder(torch.mul(p_atac, torch.sigmoid(cluster_temp)))
 
         else:
             p_atac_scale = self.atac_scale_decoder(torch.cat([p_atac, torch.softmax(libaray_temp, dim=-1)], dim=-1))
 
-        #p_atac_r = self.atac_r_decoder(p_atac)
         p_atac_r = self.atac_r_decoder(torch.mul(p_atac, torch.sigmoid(cluster_temp)))
 
-        #p_atac_dropout = self.atac_dropout_decoder(p_atac)
         p_atac_dropout = self.atac_dropout_decoder(torch.mul(p_atac, torch.sigmoid(cluster_temp)))
 
 
         libaray_atac = self.libaray_atac_scale_decoder(libaray_temp)
-        #p_atac_mean = torch.exp(libaray_atac.clamp(max=9)) * p_atac_scale # for zinp and zip loss
-        #p_atac_mean = torch.sigmoid(torch.exp(libaray_atac) * p_atac_scale)# for zinp and zip loss
-        #p_atac_mean = torch.sigmoid(p_atac_scale)# for zinp and zip loss
         p_atac_scale = p_atac_scale*self.px_atac_decoder_aux(z)# for zinp and zip loss
-        #p_atac_mean = torch.clamp(torch.exp(libaray_atac) * p_atac_scale, max=1)# for zinp and zip loss
         if libary_atac is not None:
-            #p_atac_mean = libary_atac*p_atac_mean
             p_atac_mean = torch.exp(libary_atac) * p_atac_scale
-        #p_atac_mean = libaray_atac * p_atac_scale # for binary loss
 
         return p_rna_scale, p_rna_r, p_rna_rate, p_rna_dropout, p_atac_scale, p_atac_r, p_atac_mean, p_atac_dropout
 
@@ -1446,7 +1298,6 @@ class Multi_Decoder_nb_SelfAttention(nn.Module):
         self.w_k = nn.Linear(n_hidden, n_hidden)
         self.w_v = nn.Linear(n_hidden, n_hidden)
         self.do = nn.Dropout(0.01)
-        # self.layernorm = nn.LayerNorm(n_hidden, eps=0.0001)
 
         self.px_atac_decoder_aux = nn.Sequential(
             nn.Linear(n_input, n_hidden), nn.Linear(n_hidden, ATAC_output), nn.Softmax(dim=-1)
@@ -1502,10 +1353,8 @@ class Multi_Decoder_nb_SelfAttention(nn.Module):
         K = self.w_k(p_atac).view(p_atac.shape[0], self.n_heads, p_atac.shape[1] // self.n_heads, -1)
         V = self.w_v(p_atac).view(p_atac.shape[0], self.n_heads, p_atac.shape[1] // self.n_heads, -1)
         energy = torch.matmul(Q, K.permute(0, 1, 3, 2))
-        # print("Decoder energy:{}".format(torch.max(energy)))
         attention = self.do(torch.softmax(energy, dim=-1))
         p_atac = torch.matmul(attention, V).view(p_atac.shape[0], p_atac.shape[1])
-        # p_atac = self.layernorm(p_atac)
 
         if gamma is not None:
             p_atac_scale = self.atac_scale_decoder(torch.mul(p_atac, torch.sigmoid(cluster_temp)))
@@ -1555,31 +1404,13 @@ class Multi_Decoder_nb(nn.Module):
         )
         # mean gamma
         if is_cluster:
-            #self.rna_scale_decoder = nn.Sequential(
-            #    nn.Linear(n_hidden + n_cluster, RNA_output), nn.Softmax(dim=-1)
-            #)
-            # test version
-            #self.rna_scale_decoder = nn.Sequential(
-            #    nn.Linear(n_hidden + n_hidden, 4*n_hidden), nn.Linear(4*n_hidden, RNA_output), nn.Softmax(dim=-1)
-            #)
-            # release version 210228
             self.rna_scale_decoder = nn.Sequential(
                 nn.Linear(n_hidden, 2* n_hidden), nn.Linear(2* n_hidden, RNA_output), nn.Softmax(dim=-1)
             )
-            # release version 210317
-            #self.rna_scale_decoder = nn.Sequential(
-            #    nn.Linear(n_hidden, 2 * n_hidden), nn.Linear(2 * n_hidden, RNA_output), nn.Sigmoid()
-            #)
-            #self.rna_scale_decoder = nn.Sequential(
-            #    nn.Linear(n_hidden, RNA_output), nn.Softmax(dim=-1)
-            #)
         else:
             self.rna_scale_decoder = nn.Sequential(
                 nn.Linear(n_hidden, RNA_output), nn.Softmax(dim=-1)
             )
-        #self.rna_scale_decoder = nn.Sequential(
-        #    nn.Linear(n_hidden, RNA_output), nn.Sigmoid()
-        #)
         # dispersion: here we only deal with gene-cell dispersion case
         self.rna_r_decoder = nn.Linear(n_hidden, RNA_output)
         # dropout
@@ -1599,9 +1430,6 @@ class Multi_Decoder_nb(nn.Module):
             RNA_mode=False,
         )
         # mean possion
-        #self.atac_scale_decoder = nn.Sequential(
-        #    nn.Linear(n_hidden, ATAC_output), nn.Sigmoid()
-        #)
         if is_cluster:
             self.cluster_decoder = FCLayers(
                 n_in=n_cluster,
@@ -1611,13 +1439,6 @@ class Multi_Decoder_nb(nn.Module):
                 n_hidden=n_hidden,
                 dropout_rate=0,
             )
-            #self.atac_scale_decoder = nn.Sequential(
-            #    nn.Linear( n_hidden + n_cluster, n_hidden * 4), nn.Linear(n_hidden * 4, ATAC_output)
-            #)
-        #else:
-        #self.atac_scale_decoder = nn.Sequential(
-        #    nn.Linear(2*n_hidden, n_hidden*4), nn.Linear(n_hidden*4, ATAC_output)
-        #)
         self.atac_scale_decoder = nn.Sequential(
             nn.Linear( n_hidden, n_hidden * 4), nn.Linear(n_hidden * 4, ATAC_output)
         )
@@ -1655,62 +1476,43 @@ class Multi_Decoder_nb(nn.Module):
         #print(gamma)
         if gamma is not None:
             cluster_temp = (self.cluster_decoder(gamma, *cat_list))
-            #p_rna_scale = self.rna_scale_decoder(torch.cat([p_rna, cluster_temp], dim=-1))
             #test version 210302
             p_rna_scale = self.rna_scale_decoder(torch.mul(p_rna, torch.sigmoid(cluster_temp)))
             #release version 210228
-            #p_rna_scale = self.rna_scale_decoder(torch.mul(p_rna, torch.softmax(cluster_temp,dim=-1)))
         else:
             p_rna_scale = self.rna_scale_decoder(p_rna)
 
 
-        #p_rna_dropout = self.rna_dropout_decoder(p_rna)
         p_rna_dropout = self.rna_dropout_decoder(torch.mul(p_rna, torch.sigmoid(cluster_temp)))
 
 
 
-        #p_rna_rate = torch.exp(libaray_gene.clamp(max=8)) * p_rna_scale  # torch.clamp( , max=12)
         if libary_scale is not None:
             p_rna_rate = (libary_scale) * p_rna_scale * self.px_rna_decoder_aux(z)# libary_scale
-            #p_rna_rate = torch.exp(libaray_gene) * p_rna_scale  # torch.clamp( , max=12)
         else:
             p_rna_rate = (libaray_gene) * p_rna_scale * self.px_rna_decoder_aux(z)  # torch.clamp( , max=12)
 
         p_rna_rate.clamp(max=12) # maybe it is unnecessary
-        #p_rna_r = self.rna_r_decoder(p_rna)
         p_rna_r = self.rna_r_decoder(torch.mul(p_rna, torch.sigmoid(cluster_temp)))
 
         # The decoder returns values for the parameters of the ZIP distribution of scATAC-seq
-        p_atac = self.scATAC_decoder(z, *cat_list)
-        #p_atac = self.scRNA_decoder(z, *cat_list)
-        #p_atac_scale = self.atac_scale_decoder(p_atac)
+        p_atac = self.scATAC_decoder(z, *cat_list))
         if gamma is not None:
-            #p_atac_scale = self.atac_scale_decoder(torch.cat([p_atac, cluster_temp], dim=-1))
-            # released version 210228
-            #p_atac_scale = self.atac_scale_decoder(torch.mul(p_atac, torch.softmax(cluster_temp,dim=-1)))
             # test version 210302
             p_atac_scale = self.atac_scale_decoder(torch.mul(p_atac, torch.sigmoid(cluster_temp)))
 
         else:
             p_atac_scale = self.atac_scale_decoder(torch.cat([p_atac, torch.softmax(libaray_temp, dim=-1)], dim=-1))
 
-        #p_atac_r = self.atac_r_decoder(p_atac)
         p_atac_r = self.atac_r_decoder(torch.mul(p_atac, torch.sigmoid(cluster_temp)))
 
-        #p_atac_dropout = self.atac_dropout_decoder(p_atac)
         p_atac_dropout = self.atac_dropout_decoder(torch.mul(p_atac, torch.sigmoid(cluster_temp)))
 
 
         libaray_atac = self.libaray_atac_scale_decoder(libaray_temp)
-        #p_atac_mean = torch.exp(libaray_atac.clamp(max=9)) * p_atac_scale # for zinp and zip loss
-        #p_atac_mean = torch.sigmoid(torch.exp(libaray_atac) * p_atac_scale)# for zinp and zip loss
-        #p_atac_mean = torch.sigmoid(p_atac_scale)# for zinp and zip loss
         p_atac_mean = torch.softmax(p_atac_scale,dim=-1)*self.px_atac_decoder_aux(z)# for zinp and zip loss
-        #p_atac_mean = torch.clamp(torch.exp(libaray_atac) * p_atac_scale, max=1)# for zinp and zip loss
         if libary_atac is not None:
-            #p_atac_mean = libary_atac*p_atac_mean
             p_atac_mean = torch.exp(libary_atac) * p_atac_mean
-        #p_atac_mean = libaray_atac * p_atac_scale # for binary loss
 
         return p_rna_scale, p_rna_r, p_rna_rate, p_rna_dropout, p_atac_scale, p_atac_r, p_atac_mean, p_atac_dropout
 
@@ -1741,31 +1543,14 @@ class Multi_Decoder(nn.Module):
         )
         # mean gamma
         if is_cluster:
-            #self.rna_scale_decoder = nn.Sequential(
-            #    nn.Linear(n_hidden + n_cluster, RNA_output), nn.Softmax(dim=-1)
-            #)
-            # test version
-            #self.rna_scale_decoder = nn.Sequential(
-            #    nn.Linear(n_hidden + n_hidden, 4*n_hidden), nn.Linear(4*n_hidden, RNA_output), nn.Softmax(dim=-1)
-            #)
             # release version 210228
             self.rna_scale_decoder = nn.Sequential(
                 nn.Linear(n_hidden, 2* n_hidden), nn.Linear(2* n_hidden, RNA_output), nn.Softmax(dim=-1)
             )
-            # release version 210317
-            #self.rna_scale_decoder = nn.Sequential(
-            #    nn.Linear(n_hidden, 2 * n_hidden), nn.Linear(2 * n_hidden, RNA_output), nn.Sigmoid()
-            #)
-            #self.rna_scale_decoder = nn.Sequential(
-            #    nn.Linear(n_hidden, RNA_output), nn.Softmax(dim=-1)
-            #)
         else:
             self.rna_scale_decoder = nn.Sequential(
                 nn.Linear(n_hidden, RNA_output), nn.Softmax(dim=-1)
             )
-        #self.rna_scale_decoder = nn.Sequential(
-        #    nn.Linear(n_hidden, RNA_output), nn.Sigmoid()
-        #)
         # dispersion: here we only deal with gene-cell dispersion case
         self.rna_r_decoder = nn.Linear(n_hidden, RNA_output)
         # dropout
@@ -1782,9 +1567,6 @@ class Multi_Decoder(nn.Module):
             RNA_mode=False,
         )
         # mean possion
-        #self.atac_scale_decoder = nn.Sequential(
-        #    nn.Linear(n_hidden, ATAC_output), nn.Sigmoid()
-        #)
         if is_cluster:
             self.cluster_decoder = FCLayers(
                 n_in=n_cluster,
@@ -1794,13 +1576,6 @@ class Multi_Decoder(nn.Module):
                 n_hidden=n_hidden,
                 dropout_rate=0,
             )
-            #self.atac_scale_decoder = nn.Sequential(
-            #    nn.Linear( n_hidden + n_cluster, n_hidden * 4), nn.Linear(n_hidden * 4, ATAC_output)
-            #)
-        #else:
-        #self.atac_scale_decoder = nn.Sequential(
-        #    nn.Linear(2*n_hidden, n_hidden*4), nn.Linear(n_hidden*4, ATAC_output)
-        #)
         self.atac_scale_decoder = nn.Sequential(
             nn.Linear( n_hidden, n_hidden * 4), nn.Linear(n_hidden * 4, ATAC_output)
         )
@@ -1835,65 +1610,43 @@ class Multi_Decoder(nn.Module):
         libaray_temp = self.libaray_decoder(z_c, *cat_list)
         libaray_gene = self.libaray_rna_scale_decoder(libaray_temp)
 
-        #print(gamma)
         if gamma is not None:
             cluster_temp = (self.cluster_decoder(gamma, *cat_list))
-            #p_rna_scale = self.rna_scale_decoder(torch.cat([p_rna, cluster_temp], dim=-1))
             #test version 210302
             p_rna_scale = self.rna_scale_decoder(torch.mul(p_rna, torch.sigmoid(cluster_temp)))
-            #release version 210228
-            #p_rna_scale = self.rna_scale_decoder(torch.mul(p_rna, torch.softmax(cluster_temp,dim=-1)))
         else:
             p_rna_scale = self.rna_scale_decoder(p_rna)
 
 
-        #p_rna_dropout = self.rna_dropout_decoder(p_rna)
         p_rna_dropout = self.rna_dropout_decoder(torch.mul(p_rna, torch.sigmoid(cluster_temp)))
 
 
 
-        #p_rna_rate = torch.exp(libaray_gene.clamp(max=8)) * p_rna_scale  # torch.clamp( , max=12)
         if libary_scale is not None:
             p_rna_rate = torch.exp(libary_scale) * p_rna_scale # libary_scale
-            #p_rna_rate = torch.exp(libaray_gene) * p_rna_scale  # torch.clamp( , max=12)
         else:
             p_rna_rate = torch.exp(libaray_gene) * p_rna_scale  # torch.clamp( , max=12)
 
         p_rna_rate.clamp(max=12) # maybe it is unnecessary
-        #p_rna_r = self.rna_r_decoder(p_rna)
         p_rna_r = self.rna_r_decoder(torch.mul(p_rna, torch.sigmoid(cluster_temp)))
 
         # The decoder returns values for the parameters of the ZIP distribution of scATAC-seq
         p_atac = self.scATAC_decoder(z, *cat_list)
-        #p_atac = self.scRNA_decoder(z, *cat_list)
-        #p_atac_scale = self.atac_scale_decoder(p_atac)
         if gamma is not None:
-            #p_atac_scale = self.atac_scale_decoder(torch.cat([p_atac, cluster_temp], dim=-1))
-            # released version 210228
-            #p_atac_scale = self.atac_scale_decoder(torch.mul(p_atac, torch.softmax(cluster_temp,dim=-1)))
-            # test version 210302
             p_atac_scale = self.atac_scale_decoder(torch.mul(p_atac, torch.sigmoid(cluster_temp)))
 
         else:
             p_atac_scale = self.atac_scale_decoder(torch.cat([p_atac, torch.softmax(libaray_temp, dim=-1)], dim=-1))
 
-        #p_atac_r = self.atac_r_decoder(p_atac)
         p_atac_r = self.atac_r_decoder(torch.mul(p_atac, torch.sigmoid(cluster_temp)))
 
-        #p_atac_dropout = self.atac_dropout_decoder(p_atac)
         p_atac_dropout = self.atac_dropout_decoder(torch.mul(p_atac, torch.sigmoid(cluster_temp)))
 
 
         libaray_atac = self.libaray_atac_scale_decoder(libaray_temp)
-        #p_atac_mean = torch.exp(libaray_atac.clamp(max=9)) * p_atac_scale # for zinp and zip loss
-        #p_atac_mean = torch.sigmoid(torch.exp(libaray_atac) * p_atac_scale)# for zinp and zip loss
-        #p_atac_mean = torch.sigmoid(p_atac_scale)# for zinp and zip loss
         p_atac_mean = torch.softmax(p_atac_scale,dim=-1) * self.px_atac_decoder_aux(z)# for zinp and zip loss
-        #p_atac_mean = torch.clamp(torch.exp(libaray_atac) * p_atac_scale, max=1)# for zinp and zip loss
         if libary_atac is not None:
-            #p_atac_mean = libary_atac*p_atac_mean
             p_atac_mean = torch.exp(libary_atac) * p_atac_mean
-        #p_atac_mean = libaray_atac * p_atac_scale # for binary loss
 
         return p_rna_scale, p_rna_r, p_rna_rate, p_rna_dropout, p_atac_scale, p_atac_r, p_atac_mean, p_atac_dropout
 
@@ -2047,7 +1800,6 @@ class DecoderSCVI_nb_rna(nn.Module):
         px_scale = self.px_scale_decoder(px) * self.px_decoder_aux(z)
         px_dropout = self.px_dropout_decoder(px)
         # Clamp to high value: exp(12) ~ 160000 to avoid nans (computational stability)
-        #px_rate = torch.exp(library) * px_scale  # torch.clamp( , max=12)
         px_rate = (library) * px_scale  # torch.clamp( , max=12) for scaled RNA data
         px_r = self.px_r_decoder(px) if dispersion == "gene-cell" else None
         return px_scale, px_r, px_rate, px_dropout
@@ -2127,7 +1879,6 @@ class DecoderSCVI_nb(nn.Module):
         px_dropout = self.px_dropout_decoder(px)
         # Clamp to high value: exp(12) ~ 160000 to avoid nans (computational stability)
         px_rate = torch.exp(library) * px_scale  # torch.clamp( , max=12)
-        #px_rate = (library) * px_scale  # torch.clamp( , max=12) for scaled RNA data
         px_r = self.px_r_decoder(px) if dispersion == "gene-cell" else None
         return px_scale, px_r, px_rate, px_dropout
 
@@ -2216,21 +1967,11 @@ class DecoderSCVI_nb_Selfattention(nn.Module):
         V = self.w_v(px).view(px.shape[0], self.n_heads, px.shape[1] // self.n_heads, -1)
         energy = torch.matmul(Q, K.permute(0, 1, 3, 2))
         attention = self.do(torch.softmax(energy, dim=-1))
-        '''
-        Q = self.w_q(px).view(px.shape[0], px.shape[1], -1)
-        K = self.w_k(px).view(px.shape[0], px.shape[1], -1)
-        V = self.w_v(px).view(px.shape[0], px.shape[1], -1)
-        energy = torch.matmul(Q, K.permute(0, 2, 1))
-        attention = self.do(torch.softmax(energy, dim=-1))
-        '''
         q_a = torch.matmul(attention, V).view(px.shape[0], px.shape[1])
         px_scale = self.px_scale_decoder(q_a)*self.px_decoder_aux(z)
-        #px_scale = self.px_scale_decoder(q_a)
         px_dropout = self.px_dropout_decoder(q_a)
         # Clamp to high value: exp(12) ~ 160000 to avoid nans (computational stability)
         px_rate = torch.exp(library) * px_scale  # torch.clamp( , max=12)
-        #px_rate = (library) * px_scale  # torch.clamp( , max=12) for scaled RNA data
-        #px_rate = px_scale  # torch.clamp( , max=12)
         px_r = self.px_r_decoder(q_a) if dispersion == "gene-cell" else None
         return px_scale, px_r, px_rate, px_dropout
 
@@ -2309,8 +2050,6 @@ class DecoderSCVI_Peak(nn.Module):
         px_dropout = self.px_dropout_decoder(px)
         # Clamp to high value: exp(12) ~ 160000 to avoid nans (computational stability)
         px_rate = torch.exp(library) * px_scale  # torch.clamp( , max=12)
-        #px_rate = (library) * px_scale  # torch.clamp( , max=12) for scaled RNA data
-        #px_rate = px_scale  # torch.clamp( , max=12)
         px_r = self.px_r_decoder(px) if dispersion == "gene-cell" else None
         return px_scale, px_r, px_rate, px_dropout
 
@@ -2356,16 +2095,12 @@ class DecoderSCVI_Peak_Selfattention(nn.Module):
         self.w_k = nn.Linear(n_hidden, n_hidden)
         self.w_v = nn.Linear(n_hidden, n_hidden)
         self.do = nn.Dropout(0.01)
-        #self.layernorm = nn.LayerNorm(n_hidden, eps=0.0001)
 
 
         # mean gamma
         self.px_scale_decoder = nn.Sequential(
             nn.Linear(n_hidden, n_output), nn.Sigmoid()
         )
-        #self.px_scale_decoder = nn.Sequential( # test self-attention
-        #    nn.Linear(n_hidden, n_output), nn.Softmax(dim=-1)
-        #)
 
         # dispersion: here we only deal with gene-cell dispersion case
         self.px_r_decoder = nn.Linear(n_hidden, n_output)
@@ -2404,22 +2139,12 @@ class DecoderSCVI_Peak_Selfattention(nn.Module):
         V = self.w_v(px).view(px.shape[0], self.n_heads, px.shape[1] // self.n_heads, -1)
         energy = torch.matmul(Q, K.permute(0, 1, 3, 2))
         attention = self.do(torch.softmax(energy, dim=-1))
-        '''
-        Q = self.w_q(px).view(px.shape[0], px.shape[1], -1)
-        K = self.w_k(px).view(px.shape[0], px.shape[1], -1)
-        V = self.w_v(px).view(px.shape[0], px.shape[1], -1)
-        energy = torch.matmul(Q, K.permute(0, 2, 1))
-        attention = self.do(torch.softmax(energy, dim=-1))
-        '''
+        
         q_a = torch.matmul(attention, V).view(px.shape[0], px.shape[1])
-        #q_a = self.layernorm(q_a)
         px_scale = self.px_scale_decoder(q_a)*self.px_decoder_aux(z)
-        #px_scale = self.px_scale_decoder(q_a) #for testing self-attention
         px_dropout = self.px_dropout_decoder(q_a)
         # Clamp to high value: exp(12) ~ 160000 to avoid nans (computational stability)
         px_rate = torch.exp(library) * px_scale  # torch.clamp( , max=12)
-        #px_rate = (library) * px_scale  # torch.clamp( , max=12) for scaled RNA data
-        #px_rate = px_scale  # torch.clamp( , max=12)
         px_r = self.px_r_decoder(q_a) if dispersion == "gene-cell" else None
         return px_scale, px_r, px_rate, px_dropout
 
@@ -2537,10 +2262,7 @@ class DecoderSCVI_Peak_Selfattention_Layer(nn.Module):
 
         px_scale = self.px_scale_decoder(q_a)*self.px_decoder_aux(z)
         px_dropout = self.px_dropout_decoder(q_a)
-        # Clamp to high value: exp(12) ~ 160000 to avoid nans (computational stability)
         px_rate = torch.exp(library) * px_scale  # torch.clamp( , max=12)
-        #px_rate = (library) * px_scale  # torch.clamp( , max=12) for scaled RNA data
-        #px_rate = px_scale  # torch.clamp( , max=12)
         px_r = self.px_r_decoder(q_a) if dispersion == "gene-cell" else None
         return px_scale, px_r, px_rate, px_dropout
 
@@ -2567,15 +2289,8 @@ class DecoderSCVI_mse(nn.Module):
         n_hidden: int = 128,
     ):
         super().__init__()
-        #self.px_decoder = nn.Sequential(
-        #    nn.Linear(n_input,n_hidden),
-        #    nn.LeakyReLU(),
-        #)
         self.px_decoder = nn.Linear(n_input,n_hidden)
-        # mean gamma
-        #self.px_scale_decoder = nn.Sequential(
-        #    nn.Linear(n_hidden, 2*n_hidden), nn.Linear(2*n_hidden,n_output), nn.ReLU()
-        #)
+
         self.px_scale_decoder = nn.Sequential(
             nn.Linear(n_hidden, 2 * n_hidden), nn.Linear(2 * n_hidden, n_output)
         )
@@ -2614,7 +2329,6 @@ class DecoderSCVI_mse(nn.Module):
         px_scale = self.px_scale_decoder(px)
         px_dropout = self.px_dropout_decoder(px)
         # Clamp to high value: exp(12) ~ 160000 to avoid nans (computational stability)
-        #px_rate = torch.exp(library) * px_scale  # torch.clamp( , max=12)
         px_rate = px_scale
         px_r = self.px_r_decoder(px) if dispersion == "gene-cell" else None
         return px_scale, px_r, px_rate, px_dropout

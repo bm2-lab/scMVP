@@ -125,11 +125,6 @@ class VAE_Peak_SelfAttention(nn.Module):
             self.l_encoder = Encoder(
                 n_input, 1, n_layers=1, n_hidden=n_hidden, dropout_rate=dropout_rate,
             )
-        #if self.reconstruction_loss == "nb":
-        #    self.logistic_normal = nn.Softmax(dim=-1)
-        #if self.reconstruction_loss == "mse":
-        #    self.logistic_normal = nn.Softmax(dim=-1)
-        # decoder goes from n_latent-dimensional space to n_input-d data
         if self.reconstruction_loss == "mse":
             self.decoder = DecoderSCVI_mse(
                 n_latent,
@@ -140,7 +135,6 @@ class VAE_Peak_SelfAttention(nn.Module):
             )
         elif self.reconstruction_loss == "nb" and self.log_variational:
             self.decoder = DecoderSCVI_Peak_Selfattention(
-            #self.decoder = DecoderSCVI_nb_Selfattention(
                 n_latent,
                 n_input,
                 n_cat_list=[n_batch],
@@ -149,7 +143,6 @@ class VAE_Peak_SelfAttention(nn.Module):
             )
         elif self.reconstruction_loss == "nb" and not self.log_variational:
             self.decoder = DecoderSCVI_Peak_Selfattention(
-            #self.decoder = DecoderSCVI_nb_Selfattention(
                 n_latent,
                 n_input,
                 n_cat_list=[n_batch],
@@ -190,10 +183,6 @@ class VAE_Peak_SelfAttention(nn.Module):
         qz_m, qz_v, z = self.z_encoder(x, y)  # y only used in VAEC
         if give_mean:
             z = qz_m
-        #if self.reconstruction_loss == "nb":
-        #    samples = Normal(qz_m, qz_v.sqrt()).sample([50000])
-        #    z = self.logistic_normal(samples)
-        #    z = z.mean(dim=0)
         return z
 
     def sample_from_posterior_l(self, x):
@@ -241,13 +230,8 @@ class VAE_Peak_SelfAttention(nn.Module):
     def get_reconstruction_loss(self, x, px_rate, px_r, px_dropout, **kwargs):
         # Reconstruction Loss
         if self.reconstruction_loss == "zinb":
-            #reconst_loss = -log_zinb_positive(x, px_rate, px_r, px_dropout).sum(dim=-1)
             reconst_loss = -log_nb_positive(x, px_rate, px_r).sum(dim=-1)
         elif self.reconstruction_loss == "nb":
-            #reconst_loss = -log_nb_positive(x, px_rate, px_r).sum(dim=-1)
-            #reconst_loss = -log_nb_positive(x, px_rate, px_r).sum(dim=-1) + 0.5*mean_square_error_positive(x, px_rate).sum(dim=-1)
-            #reconst_loss = -log_zinb_positive(x, px_rate, px_r, px_dropout).sum(dim=-1)
-            #reconst_loss = torch.nn.BCELoss(reduction="none")(px_rate, (x > 0).float()).sum(dim=-1) + 0.5*mean_square_error_positive(x, px_rate).sum(dim=-1)
             reconst_loss = 0.5*mean_square_error_positive(x, px_rate).sum(dim=-1) - log_zip_positive(x, px_rate, px_dropout).sum(dim=-1)
             px_rate[x > 0] = 0
             reconst_loss = reconst_loss + 0.05*px_rate.sum(dim=-1)
@@ -277,14 +261,9 @@ class VAE_Peak_SelfAttention(nn.Module):
 
         # Sampling
         qz_m, qz_v, z = self.z_encoder(x_, y)
-        #if self.reconstruction_loss == "nb":
-        #    z = self.logistic_normal(z)
-        #if self.reconstruction_loss == "mse":
-        #    z = self.logistic_normal(z)
         ql_m, ql_v, library = self.l_encoder(x_)
         if self.reconstruction_loss == "nb":
             library = library_nb
-            #library = (x.sum(dim=-1)).reshape(-1, 1) # for scaled RNA data
 
         if n_samples > 1:
             qz_m = qz_m.unsqueeze(0).expand((n_samples, qz_m.size(0), qz_m.size(1)))
@@ -334,7 +313,6 @@ class VAE_Peak_SelfAttention(nn.Module):
         :rtype: 2-tuple of :py:class:`torch.FloatTensor`
         """
         # Parameters for z latent distribution
-        #outputs = self.inference(x, batch_index, y)
         outputs = self.inference(x, batch_index, None)
         qz_m = outputs["qz_m"]
         qz_v = outputs["qz_v"]
@@ -343,16 +321,10 @@ class VAE_Peak_SelfAttention(nn.Module):
         px_rate = outputs["px_rate"]
         px_r = outputs["px_r"]
         px_dropout = outputs["px_dropout"]
-        #if self.reconstruction_loss == "nb":
-        #    library = outputs["library"]
 
         # KL Divergence
         mean = torch.zeros_like(qz_m)
         scale = torch.ones_like(qz_v)
-        #if self.reconstruction_loss == "mse":
-        #    scale = 10.0*scale
-        #if self.reconstruction_loss == "nb":
-        #    scale = 10.0*scale
 
 
         kl_divergence_z = kl(Normal(qz_m, torch.sqrt(qz_v)), Normal(mean, scale)).sum(
@@ -368,10 +340,6 @@ class VAE_Peak_SelfAttention(nn.Module):
 
         if self.reconstruction_loss == "mse" or self.reconstruction_loss == "nb":
             kl_divergence_l = 1.0
-        #if self.reconstruction_loss == "nb":
-        #    kl_divergence_l = 0.5*kl_divergence_l
-        #    reconst_loss = reconst_loss + mean_square_error(torch.log(torch.sum(x,dim=-1)), library)
-        #    print(torch.mean( mean_square_error(torch.log(torch.sum(x,dim=-1)), library)))
         print("reconst_loss=%f, kl_divergence=%f"%(torch.mean(reconst_loss),torch.mean(kl_divergence)))
         return reconst_loss + kl_divergence_l, kl_divergence, 0.0
 

@@ -129,20 +129,6 @@ class MultiPosterior(Posterior):
         # Iterate once over the posterior and compute the elbo
         elbo = 0
         for i_batch, tensors in enumerate(self):
-            '''
-            sample_batch, local_l_mean, local_l_var, batch_index, labels = tensors[
-                                                                           :5
-                                                                           ]  # general fish case
-            # kl_divergence_global (scalar) should be common across all batches after training
-            reconst_loss, kl_divergence, kl_divergence_global = vae(
-                sample_batch,
-                local_l_mean,
-                local_l_var,
-                batch_index=batch_index,
-                y=labels,
-                **kwargs
-            )
-            '''
             (
                 sample_batch_X,
                 local_l_mean,
@@ -179,7 +165,6 @@ class MultiPosterior(Posterior):
             p_rna_r = outputs["p_rna_r"]
             p_rna_rate = outputs["p_rna_rate"]
             p_rna_dropout = outputs["p_rna_dropout"]
-#            bernoulli_params = outputs.get("bernoulli_params", None) # non-used parameter
             p_atac_mean = outputs["p_atac_mean"]
             p_atac_r = outputs["p_atac_r"]
             p_atac_dropout = outputs["p_atac_dropout"]
@@ -541,31 +526,7 @@ class MultiTrainer(UnsupervisedTrainer):
         if self.normalize_loss:
             loss = loss / self.n_samples
         return loss
-        '''
-        (
-            reconst_loss_gene,
-            reconst_loss_protein,
-            kl_div_z,
-            kl_div_l_gene,
-            kl_div_back_pro,
-        ) = self.model(
-            sample_batch_X,
-            sample_batch_Y,
-            local_l_mean,
-            local_l_var,
-            batch_index,
-            label,
-        )
 
-        loss = torch.mean(
-            reconst_loss_gene
-            + self.pro_recons_weight * reconst_loss_protein
-            + self.kl_weight * kl_div_z
-            + kl_div_l_gene
-            + self.back_warmup_weight * kl_div_back_pro
-        )
-        return loss
-        '''
 
     def on_epoch_begin(self):
         super().on_epoch_begin()
