@@ -26,8 +26,8 @@ Try ```import scMVP``` in your python console and start your first [**tutorial**
 Analysis scripts for other datasets are deposited in [**folder**](demos/manuscript_analysis/)
 
 ### All processed dataset and trained models:<br>
-Download link: [baidu cloud disk](https://pan.baidu.com/s/1Lk_BRyHq8Re_zpXWBMkLqA)<br>
-Download code: ki9q<br>
+Download link: [baidu cloud disk](https://pan.baidu.com/s/183jLROAUuNfVKCeBY4B4DQ)<br>
+Download code: mkij<br>
 - pre_trainer.pkl  scRNA pretraining models <br>
 - pre_atac_trainer.pkl scATAC pretraining models <br>
 - multi_vae_trainer.pkl scMVP training models <br>
