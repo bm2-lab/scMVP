@@ -73,7 +73,7 @@ setup(
         "Operating System :: POSIX :: Linux",
         "Topic :: Scientific/Engineering :: bioinformatics",
     ],
-    description="Single-cell Variational Inference",
+    description="Single Cell Multi-View Profiler",
     install_requires=requirements+extras_requirements["notebooks"],
     license="MIT license",
     # long_description=readme + "\n\n" + history,
