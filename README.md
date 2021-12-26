@@ -23,7 +23,7 @@ python setup.py install
 
 Try ```import scMVP``` in your python console and start your first [**tutorial**](demos/scMVP_tutorial.ipynb) with scMVP!
 
-Analysis scripts for other datasets are deposited in [**folder**](demos/manuscript_analysis/)
+Jupyter notebooks for other datasets analyzed and benchmarked in our GB paper are deposited in [**folder**](demos/manuscript_analysis/)
 
 ### All processed dataset and trained models:<br>
 Download link: [baidu cloud disk](https://pan.baidu.com/s/183jLROAUuNfVKCeBY4B4DQ)<br>
@@ -42,5 +42,5 @@ Applying scMVP to sci-CAR cell line mixture. [**demo**](demos/scMVP_tutorial.ipy
 
 
 ### Reference
-A deep generative model for multi-view profiling of single-cell RNA-seq and ATAC-seq data.(submited) 2021
+A deep generative model for multi-view profiling of single-cell RNA-seq and ATAC-seq data. Genome Biology 2021 (accepted) 
 

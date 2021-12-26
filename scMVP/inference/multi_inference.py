@@ -12,7 +12,7 @@ from scMVP.inference import Posterior
 from . import UnsupervisedTrainer
 
 from scMVP.dataset import GeneExpressionDataset
-from scMVP.models import multi_vae
+from scMVP.models import multi_vae_attention
 from sklearn.utils.linear_assignment_ import linear_assignment
 
 logger = logging.getLogger(__name__)
@@ -49,7 +49,7 @@ class MultiPosterior(Posterior):
 
     def __init__(
         self,
-        model: multi_vae,
+        model: multi_vae_attention,
         gene_dataset: GeneExpressionDataset,
         shuffle: bool = False,
         indices: Optional[np.ndarray] = None,
@@ -116,7 +116,7 @@ class MultiPosterior(Posterior):
         logger.debug("True LL : %.4f" % ll)
         return ll
 
-    def compute_elbo(self, vae:multi_vae, **kwargs):
+    def compute_elbo(self, vae:multi_vae_attention, **kwargs):
         """ Computes the ELBO.
 
         The ELBO is the reconstruction error + the KL divergences
@@ -146,7 +146,7 @@ class MultiPosterior(Posterior):
         elbo += kl_divergence_global
         return elbo / n_samples
 
-    def compute_reconstruction_error(self, vae:multi_vae, **kwargs):
+    def compute_reconstruction_error(self, vae:multi_vae_attention, **kwargs):
         r""" Computes log p(x/z), which is the reconstruction error .
                     Differs from the marginal log likelihood, but still gives good
                     insights on the modeling of the data, and is fast to compute
@@ -191,7 +191,7 @@ class MultiPosterior(Posterior):
         n_samples = len(self.indices)
         return log_lkl / n_samples
 
-    def compute_marginal_log_likelihood(self, vae:multi_vae , n_mc_samples):
+    def compute_marginal_log_likelihood(self, vae:multi_vae_attention , n_mc_samples):
         """ Computes a biased estimator for log p(x), which is the marginal log likelihood.
 
             Despite its bias, the estimator still converges to the real value
