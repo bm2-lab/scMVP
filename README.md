@@ -6,7 +6,9 @@ with multi-modal self-attention generation model.
 ## Installation
 **Environment requirements:**<br>
 scMVP requires Python3.7.x and [**Pytorch**](http://pytorch.org).<br>
-For example, use [**miniconda**](https://conda.io/miniconda.html) to install python and pytorch of CPU or GPU version.
+For example, use [**miniconda**](https://conda.io/miniconda.html) to install python and pytorch of CPU or GPU version.  
+We have tested the GPU version on NVIDA 1080Ti platform with CUDA version 10.2.  
+
 ```Bash
 conda install -c pytorch python=3.7 pytorch
 # if you do not have jupyter notebook/ipython notebook, you can also install by conda
@@ -37,10 +39,16 @@ Download code: mkij<br>
 
 Applying scMVP to sci-CAR cell line mixture. [**demo**](demos/scMVP_tutorial.ipynb)
 - Training and visualization with scMVP.
-- Pretraining and transferring to scMVP(large dataset).
+- Pretraining and transferring to scMVP(perform better in large dataset).
 
 
 
 ### Reference
-A deep generative model for multi-view profiling of single-cell RNA-seq and ATAC-seq data. Genome Biology 2021 (accepted) 
+A deep generative model for multi-view profiling of single-cell RNA-seq and ATAC-seq data. Genome Biology 2022 (accepted) 
+
+
+### Contact Authors
+Prof. Qi Liu: [qiliu@tongji.edu.cn](qiliu@tongji.edu.cn)<br>
+Dr. Gaoyang Li: [lgyzngc@gmail.com](lgyzngc@gmail.com)<br>
+Shaliu Fu: [adam.tongji@gmail.com](adam.tongji@gmail.com)<br>
 
