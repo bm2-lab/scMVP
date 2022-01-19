@@ -1496,7 +1496,7 @@ class Multi_Decoder_nb(nn.Module):
         p_rna_r = self.rna_r_decoder(torch.mul(p_rna, torch.sigmoid(cluster_temp)))
 
         # The decoder returns values for the parameters of the ZIP distribution of scATAC-seq
-        p_atac = self.scATAC_decoder(z, *cat_list))
+        p_atac = self.scATAC_decoder(z, *cat_list)
         if gamma is not None:
             # test version 210302
             p_atac_scale = self.atac_scale_decoder(torch.mul(p_atac, torch.sigmoid(cluster_temp)))
