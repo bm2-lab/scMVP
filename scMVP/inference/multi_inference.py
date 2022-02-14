@@ -286,7 +286,7 @@ class MultiPosterior(Posterior):
                 latent_temp[1][0].cpu()
             ]
             latent_atac += [
-                latent_temp[2][0].cpu()
+                latent_temp[2].cpu()
             ]
             gamma, mu_c, var_c, pi = self.model.get_gamma(latent_temp[0][0])
             cluster_gamma += [gamma.cpu()]
