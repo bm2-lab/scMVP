@@ -3,6 +3,12 @@
 scMVP is a python toolkit for joint profiling of scRNA and scATAC data and analysis
 with multi-modal self-attention generation model.
 
+## Update logs
+- 20220815 
+Complete the test for GPU version on NVIDA 3090 platform with CUDA version 11.2. <br>
+Add  scRNA and scATAC input check in tutorial. <br>
+
+
 ## Installation
 **Environment requirements:**<br>
 scMVP requires Python3.7.x and [**Pytorch**](http://pytorch.org).<br>
@@ -44,7 +50,7 @@ Applying scMVP to sci-CAR cell line mixture. [**demo**](demos/scMVP_tutorial.ipy
 
 
 ### Reference
-A deep generative model for multi-view profiling of single-cell RNA-seq and ATAC-seq data. Genome Biology 2022 (accepted) 
+A deep generative model for multi-view profiling of single-cell RNA-seq and ATAC-seq data. Genome Biology 2022 [**paper**](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-021-02595-6) 
 
 
 ### Contact Authors
