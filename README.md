@@ -4,7 +4,7 @@ scMVP is a python toolkit for joint profiling of scRNA and scATAC data and analy
 with multi-modal self-attention generation model.
 
 ## Update logs
-- 20220815 
+- 20220815 <br>
 Complete the test for GPU version on NVIDA 3090 platform with CUDA version 11.2. <br>
 Add  scRNA and scATAC input check in tutorial. <br>
 
