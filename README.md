@@ -35,6 +35,8 @@ Jupyter notebooks for other datasets analyzed and benchmarked in our GB paper ar
 
 ### All processed dataset and trained models:<br>
 Download link: [baidu cloud disk](https://pan.baidu.com/s/183jLROAUuNfVKCeBY4B4DQ)<br>
+- update 23/10/22 : google drive link for cellline datasets: [google drive](https://drive.google.com/drive/folders/18ymTLyMb_wD20O4Z2qkOXBQt5yoDTvea?usp=sharing)<br>
+
 Download code: mkij<br>
 - pre_trainer.pkl  scRNA pretraining models <br>
 - pre_atac_trainer.pkl scATAC pretraining models <br>
