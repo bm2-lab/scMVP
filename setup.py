@@ -56,7 +56,7 @@ extras_requirements = {
     "test": test_requirements,
 }
 author = (
-    "Gao yang Li, "
+    "Gao yang Li, Shaliu FU"
 )
 
 setup(
