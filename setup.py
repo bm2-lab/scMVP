@@ -22,7 +22,7 @@ requirements = [
     "dask==2.0",
     "anndata>=0.7",
     "scanpy>=1.4.6",
-    "scikit-learn==0.22.2",
+    "scikit-learn>=0.22.2",
     "numba>=0.48",  # numba 0.45.1 has a conflict with UMAP and numba 0.46.0 with parallelization in loompy
     "hyperopt==0.1.2",
 ]

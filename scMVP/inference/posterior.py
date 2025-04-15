@@ -19,7 +19,9 @@ from sklearn.metrics import normalized_mutual_info_score as NMI
 from sklearn.metrics import silhouette_score
 from sklearn.mixture import GaussianMixture as GMM
 from sklearn.neighbors import NearestNeighbors, KNeighborsRegressor
-from sklearn.utils.linear_assignment_ import linear_assignment
+# from sklearn.utils.linear_assignment_ import linear_assignment
+from scipy.optimize import linear_sum_assignment as linear_assignment
+
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import (
     SequentialSampler,
