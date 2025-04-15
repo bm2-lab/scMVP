@@ -19,7 +19,7 @@ requirements = [
     # "ipython>=7.1.1",
     # "anndata==0.6.22.post1",
     # "scanpy==1.4.4.post1",
-    "dask==2.0",
+    "dask>=2.0",
     "anndata>=0.7",
     "scanpy>=1.4.6",
     "scikit-learn>=0.22.2",
