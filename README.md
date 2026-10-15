@@ -5,7 +5,7 @@ with multi-modal self-attention generation model.
 
 ## Update logs
 - 20261015
-The umap coordinates in Table S2 and S3 were pasted incorrectly, resulting in duplicated data. The corrected file was provided in [excel file](supple_correction/gb_additional_file_revise) with red highlight.
+The umap coordinates in Table S2 and S3 were pasted incorrectly, resulting in duplicated data. The corrected file was provided in [excel file](supple_correction/gb_additional_file_revise.xlsx) with red highlight.
 
 
 - 20220815 <br>
